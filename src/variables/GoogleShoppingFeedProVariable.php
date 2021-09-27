@@ -67,8 +67,6 @@ class GoogleShoppingFeedProVariable
      */
     public function generateFeed(array $elements): void
     {
-        set_time_limit(0);
-
         $response = Craft::$app->getResponse();
         $response->getHeaders()->set('Content-Type', 'application/xml; charset=UTF-8');
 

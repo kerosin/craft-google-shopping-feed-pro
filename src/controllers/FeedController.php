@@ -44,8 +44,6 @@ class FeedController extends Controller
      */
     public function actionEntries()
     {
-        set_time_limit(0);
-
         $response = Craft::$app->getResponse();
         $response->format = Response::FORMAT_RAW;
         $response->getHeaders()->set('Content-Type', 'application/xml; charset=UTF-8');
@@ -62,8 +60,6 @@ class FeedController extends Controller
      */
     public function actionProducts()
     {
-        set_time_limit(0);
-
         $response = Craft::$app->getResponse();
         $response->format = Response::FORMAT_RAW;
         $response->getHeaders()->set('Content-Type', 'application/xml; charset=UTF-8');
