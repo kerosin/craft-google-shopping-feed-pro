@@ -79,13 +79,8 @@ class GoogleShoppingFeedPro extends Plugin
         parent::init();
         self::$plugin = $this;
 
-        // Register routes
         $this->registerRoutes();
-
-        // Register variables
         $this->registerVariables();
-
-        Craft::info(Craft::t('google-shopping-feed-pro', '{name} plugin loaded', ['name' => $this->name]), __METHOD__);
     }
 
     // Protected Methods
