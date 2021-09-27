@@ -41,16 +41,16 @@
                     {% elseif isCommerceInstalled %}
                         {% if element is instance of('craft\\commerce\\elements\\Product') %}
                             {% if element.defaultVariant.hasUnlimitedStock or element.defaultVariant.stock > 0 %}
-                                {% set availability = constant('PRODUCT_AVAILABILITY_IN_STOCK', settings) %}
+                                {% set availability = constant('AVAILABILITY_IN_STOCK', settings) %}
                             {% else %}
-                                {% set availability = constant('PRODUCT_AVAILABILITY_OUT_OF_STOCK', settings) %}
+                                {% set availability = constant('AVAILABILITY_OUT_OF_STOCK', settings) %}
                             {% endif %}
                         {% endif %}
                     {% endif %}
                     {% if availability is defined and availability is not empty %}
                         {% set availability = availability|striptags|trim %}
                     {% else %}
-                        {% set availability = constant('PRODUCT_AVAILABILITY_IN_STOCK', settings) %}
+                        {% set availability = constant('AVAILABILITY_IN_STOCK', settings) %}
                     {% endif %}
                     <g:availability><![CDATA[{{ availability }}]]></g:availability>
 

@@ -23,8 +23,8 @@ class Settings extends Model
 
     const OPTION_CUSTOM_VALUE = '__custom_value__';
 
-    const PRODUCT_AVAILABILITY_IN_STOCK = 'in_stock';
-    const PRODUCT_AVAILABILITY_OUT_OF_STOCK = 'out_of_stock';
+    const AVAILABILITY_IN_STOCK = 'in_stock';
+    const AVAILABILITY_OUT_OF_STOCK = 'out_of_stock';
 
     // Public Properties
     // =========================================================================
