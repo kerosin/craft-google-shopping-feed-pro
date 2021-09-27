@@ -2,7 +2,7 @@
     "name": "kerosin/craft-google-shopping-feed-pro",
     "description": "Google Shopping Feed for Craft CMS.",
     "type": "craft-plugin",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "keywords": [
         "craft",
         "cms",
@@ -29,7 +29,7 @@
     },
     "autoload": {
         "psr-4": {
-          "kerosin\\googleshoppingfeedpro\\": "src/"
+            "kerosin\\googleshoppingfeedpro\\": "src/"
         }
     },
     "extra": {
