@@ -117,7 +117,7 @@ class GoogleShoppingFeedPro extends Plugin
     }
 
     /**
-     * Registers routes
+     * Registers routes.
      *
      * @return void
      */
@@ -134,7 +134,7 @@ class GoogleShoppingFeedPro extends Plugin
     }
 
     /**
-     * Registers variables
+     * Registers variables.
      *
      * @return void
      */

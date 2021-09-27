@@ -7,8 +7,6 @@
  */
 
 /**
- * Google Shopping Feed Pro config.php
- *
  * This file exists only as a template for the Google Shopping Feed Pro settings.
  * It does nothing on its own.
  *
