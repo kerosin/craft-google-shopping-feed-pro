@@ -1,0 +1,84 @@
+{% macro baseField(tag, element, field, customValue, separator = ',') %}
+    {% if field is not empty %}
+        {% if craft.googleShoppingFeedPro.isCustomValue(field) %}
+            {% set value = customValue %}
+        {% else %}
+            {% set fieldValue = craft.googleShoppingFeedPro.elementFieldValue(element, field) %}
+            {% if fieldValue is instance of('DateTime') %}
+                {% set value = fieldValue|atom %}
+            {% elseif fieldValue is instance of('craft\\elements\\db\\ElementQuery') %}
+                {% if fieldValue|length %}
+                    {% set items = [] %}
+                    {% for item in fieldValue.all() %}
+                        {% if item.title is defined and item.title is not empty %}
+                            {% set items = items|merge([item.title]) %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set value = items|join(separator) %}
+                {% endif %}
+            {% else %}
+                {% set value = fieldValue %}
+            {% endif %}
+        {% endif %}
+        {% if value is defined %}
+            {% set value = value|striptags|trim %}
+            {% if value is not empty %}
+                <g:{{ tag }}><![CDATA[{{ value }}]]></g:{{ tag }}>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
+{% macro measureField(tag, element, field, unitField, unitCustomValue, unitDefaultValue, format = false, spaceUnit = true) %}
+    {% if field is not empty %}
+        {% set value = craft.googleShoppingFeedPro.elementFieldValue(element, field)|striptags|trim %}
+        {% if value is not empty %}
+            {% set value = value|replace({',': '.'}) %}
+            {% set value = format ? value|number_format(2, '.', '') : (value + 0) %}
+            {% if craft.googleShoppingFeedPro.isCustomValue(unitField) %}
+                {% set unitValue = unitCustomValue %}
+            {% elseif unitField is not empty %}
+                {% set unitValue = craft.googleShoppingFeedPro.elementFieldValue(element, unitField) %}
+            {% elseif unitDefaultValue is not empty %}
+                {% set unitValue = unitDefaultValue %}
+            {% endif %}
+            {% set unitValue = unitValue is defined ? unitValue|striptags|trim %}
+            <g:{{ tag }}>{{ value }}{{ unitValue is not empty ? (spaceUnit ? ' ') ~ unitValue }}</g:{{ tag }}>
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
+{% macro dateRangeField(tag, element, fieldFrom, fieldTo) %}
+    {% if fieldFrom is not empty and fieldTo is not empty %}
+        {% set valueFrom = craft.googleShoppingFeedPro.elementFieldValue(element, fieldFrom) %}
+        {% if valueFrom is instance of('DateTime') %}
+            {% set valueFrom = valueFrom|atom %}
+        {% else %}
+            {% set valueFrom = valueFrom|striptags|trim %}
+        {% endif %}
+        {% set valueTo = craft.googleShoppingFeedPro.elementFieldValue(element, fieldTo) %}
+        {% if valueTo is instance of('DateTime') %}
+            {% set valueTo = valueTo|atom %}
+        {% else %}
+            {% set valueTo = valueTo|striptags|trim %}
+        {% endif %}
+        {% if valueFrom is not empty and valueTo is not empty %}
+            <g:{{ tag }}><![CDATA[{{ valueFrom }}/{{ valueTo }}]]></g:{{ tag }}>
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
+{% macro assetField(tag, element, field, multiple = false) %}
+    {% if field is not empty %}
+        {% set value = craft.googleShoppingFeedPro.elementFieldValue(element, field) %}
+        {% if value is instance of('craft\\elements\\db\\AssetQuery') and value|length %}
+            {% if multiple %}
+                {% for item in value.all() %}
+                    <g:{{ tag }}><![CDATA[{{ item.url }}]]></g:{{ tag }}>
+                {% endfor %}
+            {% else %}
+                <g:{{ tag }}><![CDATA[{{ value.one().url }}]]></g:{{ tag }}>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endmacro %}

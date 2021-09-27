@@ -1,5 +1,6 @@
-{% set isCommerceInstalled = craft.app.plugins.isPluginInstalled('commerce') %}
+{% import 'google-shopping-feed-pro/_macros/fields' as fields %}
 {% spaceless %}
+    {% set isCommerceInstalled = craft.app.plugins.isPluginInstalled('commerce') %}
     <?xml version="1.0" encoding="UTF-8"?>
     <rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
         <channel>
@@ -10,28 +11,13 @@
                 <item>
 
                     {# id #}
-                    {% if settings.idField is not empty %}
-                        {% set id = craft.googleShoppingFeedPro.elementFieldValue(element, settings.idField)|striptags|trim %}
-                        {% if id is not empty %}
-                            <g:id><![CDATA[{{ id }}]]></g:id>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('id', element, settings.idField) }}
 
                     {# title #}
-                    {% if settings.titleField is not empty %}
-                        {% set title = craft.googleShoppingFeedPro.elementFieldValue(element, settings.titleField)|striptags|trim %}
-                        {% if title is not empty %}
-                            <g:title><![CDATA[{{ title }}]]></g:title>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('title', element, settings.titleField) }}
 
                     {# description #}
-                    {% if settings.descriptionField is not empty %}
-                        {% set description = craft.googleShoppingFeedPro.elementFieldValue(element, settings.descriptionField)|striptags|trim %}
-                        {% if description is not empty %}
-                            <g:description><![CDATA[{{ description }}]]></g:description>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('description', element, settings.descriptionField) }}
 
                     {# link #}
                     {% if element.url is not empty %}
@@ -39,28 +25,19 @@
                     {% endif %}
 
                     {# image_link #}
-                    {% if settings.imageLinkField is not empty %}
-                        {% set imageLink = craft.googleShoppingFeedPro.elementFieldValue(element, settings.imageLinkField) %}
-                        {% if imageLink is instance of('craft\\elements\\db\\AssetQuery') and imageLink|length %}
-                            <g:image_link><![CDATA[{{ imageLink.one().url }}]]></g:image_link>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.assetField('image_link', element, settings.imageLinkField) }}
 
                     {# additional_image_link #}
-                    {% if settings.additionalImageLinkField is not empty %}
-                        {% set additionalImageLink = craft.googleShoppingFeedPro.elementFieldValue(element, settings.additionalImageLinkField) %}
-                        {% if additionalImageLink is instance of('craft\\elements\\db\\AssetQuery') and additionalImageLink|length %}
-                            {% for image in additionalImageLink.all() %}
-                                <g:additional_image_link><![CDATA[{{ image.url }}]]></g:additional_image_link>
-                            {% endfor %}
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.assetField('additional_image_link', element, settings.additionalImageLinkField, true) }}
 
                     {# availability #}
                     {% if craft.googleShoppingFeedPro.isCustomValue(settings.availabilityField) %}
                         {% set availability = settings.availabilityCustomValue %}
                     {% elseif settings.availabilityField is not empty %}
-                        {% set availability = craft.googleShoppingFeedPro.elementFieldValue(element, settings.availabilityField) %}
+                        {% set availability = craft.googleShoppingFeedPro.elementFieldValue(
+                            element,
+                            settings.availabilityField
+                        ) %}
                     {% elseif isCommerceInstalled %}
                         {% if element is instance of('craft\\commerce\\elements\\Product') %}
                             {% if element.defaultVariant.hasUnlimitedStock or element.defaultVariant.stock > 0 %}
@@ -78,504 +55,218 @@
                     <g:availability><![CDATA[{{ availability }}]]></g:availability>
 
                     {# availability_date #}
-                    {% if settings.availabilityDateField is not empty %}
-                        {% set availabilityDateValue = craft.googleShoppingFeedPro.elementFieldValue(element, settings.availabilityDateField) %}
-                        {% if availabilityDateValue is instance of('DateTime') %}
-                            {% set availabilityDate = availabilityDateValue|atom %}
-                        {% else %}
-                            {% set availabilityDate = availabilityDateValue|striptags|trim %}
-                        {% endif %}
-                        {% if availabilityDate is not empty %}
-                            <g:availability_date><![CDATA[{{ availabilityDate }}]]></g:availability_date>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('availability_date', element, settings.availabilityDateField) }}
 
                     {# cost_of_goods_sold #}
-                    {% if settings.costOfGoodsSoldField is not empty %}
-                        {% set costOfGoodsSold = craft.googleShoppingFeedPro.elementFieldValue(element, settings.costOfGoodsSoldField)|striptags|trim %}
-                        {% if costOfGoodsSold is not empty %}
-                            {% if craft.googleShoppingFeedPro.isCustomValue(settings.currencyField) %}
-                                {% set priceCurrency = settings.currencyCustomValue %}
-                            {% elseif settings.currencyField is not empty %}
-                                {% set priceCurrency = craft.googleShoppingFeedPro.elementFieldValue(element, settings.currencyField) %}
-                            {% elseif isCommerceInstalled %}
-                                {% set priceCurrency = craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso %}
-                            {% endif %}
-                            {% set priceCurrency = priceCurrency is defined ? priceCurrency|striptags|trim %}
-                            <g:cost_of_goods_sold>{{ costOfGoodsSold|replace({',': '.'})|number_format(2, '.', '') }}{{ priceCurrency is not empty ? ' ' ~ priceCurrency }}</g:cost_of_goods_sold>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.measureField(
+                        'cost_of_goods_sold',
+                        element,
+                        settings.costOfGoodsSoldField,
+                        settings.currencyField,
+                        settings.currencyCustomValue,
+                        (isCommerceInstalled ? craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso),
+                        true
+                    ) }}
 
                     {# expiration_date #}
-                    {% if settings.expirationDateField is not empty %}
-                        {% set expirationDateValue = craft.googleShoppingFeedPro.elementFieldValue(element, settings.expirationDateField) %}
-                        {% if expirationDateValue is instance of('DateTime') %}
-                            {% set expirationDate = expirationDateValue|atom %}
-                        {% else %}
-                            {% set expirationDate = expirationDateValue|striptags|trim %}
-                        {% endif %}
-                        {% if expirationDate is not empty %}
-                            <g:expiration_date><![CDATA[{{ expirationDate }}]]></g:expiration_date>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('expiration_date', element, settings.expirationDateField) }}
 
                     {# price #}
-                    {% if settings.priceField is not empty %}
-                        {% set price = craft.googleShoppingFeedPro.elementFieldValue(element, settings.priceField)|striptags|trim %}
-                        {% if price is not empty %}
-                            {% if craft.googleShoppingFeedPro.isCustomValue(settings.currencyField) %}
-                                {% set priceCurrency = settings.currencyCustomValue %}
-                            {% elseif settings.currencyField is not empty %}
-                                {% set priceCurrency = craft.googleShoppingFeedPro.elementFieldValue(element, settings.currencyField) %}
-                            {% elseif isCommerceInstalled %}
-                                {% set priceCurrency = craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso %}
-                            {% endif %}
-                            {% set priceCurrency = priceCurrency is defined ? priceCurrency|striptags|trim %}
-                            <g:price>{{ price|replace({',': '.'})|number_format(2, '.', '') }}{{ priceCurrency is not empty ? ' ' ~ priceCurrency }}</g:price>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.measureField(
+                        'price',
+                        element,
+                        settings.priceField,
+                        settings.currencyField,
+                        settings.currencyCustomValue,
+                        (isCommerceInstalled ? craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso),
+                        true
+                    ) }}
 
-                    {# salePrice #}
-                    {% if settings.salePriceField is not empty %}
-                        {% set salePrice = craft.googleShoppingFeedPro.elementFieldValue(element, settings.salePriceField)|striptags|trim %}
-                        {% if salePrice is not empty %}
-                            {% if craft.googleShoppingFeedPro.isCustomValue(settings.currencyField) %}
-                                {% set priceCurrency = settings.currencyCustomValue %}
-                            {% elseif settings.currencyField is not empty %}
-                                {% set priceCurrency = craft.googleShoppingFeedPro.elementFieldValue(element, settings.currencyField) %}
-                            {% elseif isCommerceInstalled %}
-                                {% set priceCurrency = craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso %}
-                            {% endif %}
-                            {% set priceCurrency = priceCurrency is defined ? priceCurrency|striptags|trim %}
-                            <g:sale_price>{{ salePrice|replace({',': '.'})|number_format(2, '.', '') }}{{ priceCurrency is not empty ? ' ' ~ priceCurrency }}</g:sale_price>
-                        {% endif %}
-                    {% endif %}
+                    {# sale_price #}
+                    {{ fields.measureField(
+                        'sale_price',
+                        element,
+                        settings.salePriceField,
+                        settings.currencyField,
+                        settings.currencyCustomValue,
+                        (isCommerceInstalled ? craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso),
+                        true
+                    ) }}
 
                     {# sale_price_effective_date #}
-                    {% if 
-                        settings.salePriceField is not empty and 
-                        settings.salePriceEffectiveDateFromField is not empty and 
-                        settings.salePriceEffectiveDateToField is not empty 
-                    %}
-                        {% set salePriceEffectiveDateFromValue = craft.googleShoppingFeedPro.elementFieldValue(element, settings.salePriceEffectiveDateFromField) %}
-                        {% if salePriceEffectiveDateFromValue is instance of('DateTime') %}
-                            {% set salePriceEffectiveDateFrom = salePriceEffectiveDateFromValue|atom %}
-                        {% else %}
-                            {% set salePriceEffectiveDateFrom = salePriceEffectiveDateFromValue|striptags|trim %}
-                        {% endif %}
-                        {% set salePriceEffectiveDateToValue = craft.googleShoppingFeedPro.elementFieldValue(element, settings.salePriceEffectiveDateToField) %}
-                        {% if salePriceEffectiveDateToValue is instance of('DateTime') %}
-                            {% set salePriceEffectiveDateTo = salePriceEffectiveDateToValue|atom %}
-                        {% else %}
-                            {% set salePriceEffectiveDateTo = salePriceEffectiveDateToValue|striptags|trim %}
-                        {% endif %}
-                        {% if salePriceEffectiveDateFrom is not empty and salePriceEffectiveDateTo is not empty %}
-                            <g:sale_price_effective_date><![CDATA[{{ salePriceEffectiveDateFrom }}/{{ salePriceEffectiveDateTo }}]]></g:sale_price_effective_date>
-                        {% endif %}
+                    {% if settings.salePriceField is not empty %}
+                        {{ fields.dateRangeField(
+                            'sale_price_effective_date',
+                            element,
+                            settings.salePriceEffectiveDateFromField,
+                            settings.salePriceEffectiveDateToField
+                        ) }}
                     {% endif %}
 
                     {# unit_pricing_measure #}
-                    {% if settings.unitPricingMeasureField is not empty %}
-                        {% set unitPricingMeasure = craft.googleShoppingFeedPro.elementFieldValue(element, settings.unitPricingMeasureField)|striptags|trim %}
-                        {% if unitPricingMeasure is not empty %}
-                            {% if craft.googleShoppingFeedPro.isCustomValue(settings.unitPricingMeasureUnitField) %}
-                                {% set unitPricingMeasureUnit = settings.unitPricingMeasureUnitCustomValue %}
-                            {% elseif settings.unitPricingMeasureUnitField is not empty %}
-                                {% set unitPricingMeasureUnit = craft.googleShoppingFeedPro.elementFieldValue(element, settings.unitPricingMeasureUnitField) %}
-                            {% endif %}
-                            {% set unitPricingMeasureUnit = unitPricingMeasureUnit is defined ? unitPricingMeasureUnit|striptags|trim %}
-                            <g:unit_pricing_measure>{{ (unitPricingMeasure|replace({',': '.'}) + 0) }}{{ unitPricingMeasureUnit is not empty ? unitPricingMeasureUnit }}</g:unit_pricing_measure>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.measureField(
+                        'unit_pricing_measure',
+                        element,
+                        settings.unitPricingMeasureField,
+                        settings.unitPricingMeasureUnitField,
+                        settings.unitPricingMeasureUnitCustomValue,
+                        null,
+                        false,
+                        false
+                    ) }}
 
                     {# unit_pricing_base_measure #}
-                    {% if settings.unitPricingBaseMeasureField is not empty %}
-                        {% set unitPricingBaseMeasure = craft.googleShoppingFeedPro.elementFieldValue(element, settings.unitPricingBaseMeasureField)|striptags|trim %}
-                        {% if unitPricingBaseMeasure is not empty %}
-                            {% if craft.googleShoppingFeedPro.isCustomValue(settings.unitPricingBaseMeasureUnitField) %}
-                                {% set unitPricingBaseMeasureUnit = settings.unitPricingBaseMeasureUnitCustomValue %}
-                            {% elseif settings.unitPricingBaseMeasureUnitField is not empty %}
-                                {% set unitPricingBaseMeasureUnit = craft.googleShoppingFeedPro.elementFieldValue(element, settings.unitPricingBaseMeasureUnitField) %}
-                            {% endif %}
-                            {% set unitPricingBaseMeasureUnit = unitPricingBaseMeasureUnit is defined ? unitPricingBaseMeasureUnit|striptags|trim %}
-                            <g:unit_pricing_base_measure>{{ (unitPricingBaseMeasure|replace({',': '.'}) + 0) }}{{ unitPricingBaseMeasureUnit is not empty ? unitPricingBaseMeasureUnit }}</g:unit_pricing_base_measure>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.measureField(
+                        'unit_pricing_base_measure',
+                        element,
+                        settings.unitPricingBaseMeasureField,
+                        settings.unitPricingBaseMeasureUnitField,
+                        settings.unitPricingBaseMeasureUnitCustomValue,
+                        null,
+                        false,
+                        false
+                    ) }}
 
                     {# installment #}
-                    {% if settings.installmentField is not empty %}
-                        {% set installment = craft.googleShoppingFeedPro.elementFieldValue(element, settings.installmentField)|striptags|trim %}
-                        {% if installment is not empty %}
-                            <g:installment><![CDATA[{{ installment }}]]></g:installment>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('installment', element, settings.installmentField) }}
 
                     {# subscription_cost #}
-                    {% if settings.subscriptionCostField is not empty %}
-                        {% set subscriptionCost = craft.googleShoppingFeedPro.elementFieldValue(element, settings.subscriptionCostField)|striptags|trim %}
-                        {% if subscriptionCost is not empty %}
-                            <g:subscription_cost><![CDATA[{{ subscriptionCost }}]]></g:subscription_cost>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('subscription_cost', element, settings.subscriptionCostField) }}
 
                     {# loyalty_points #}
-                    {% if settings.loyaltyPointsField is not empty %}
-                        {% set loyaltyPoints = craft.googleShoppingFeedPro.elementFieldValue(element, settings.loyaltyPointsField)|striptags|trim %}
-                        {% if loyaltyPoints is not empty %}
-                            <g:loyalty_points><![CDATA[{{ loyaltyPoints }}]]></g:loyalty_points>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('loyalty_points', element, settings.loyaltyPointsField) }}
 
                     {# google_product_category #}
-                    {% if settings.googleProductCategoryField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.googleProductCategoryField) %}
-                            {% set googleProductCategory = settings.googleProductCategoryCustomValue %}
-                        {% else %}
-                            {% set googleProductCategory = craft.googleShoppingFeedPro.elementFieldValue(element, settings.googleProductCategoryField) %}
-                        {% endif %}
-                        {% set googleProductCategory = googleProductCategory|striptags|trim %}
-                        {% if googleProductCategory is not empty %}
-                            <g:google_product_category><![CDATA[{{ googleProductCategory }}]]></g:google_product_category>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField(
+                        'google_product_category',
+                        element,
+                        settings.googleProductCategoryField,
+                        settings.googleProductCategoryCustomValue
+                    ) }}
 
                     {# product_type #}
-                    {% if settings.productTypeField is not empty %}
-                        {% set productTypeValue = craft.googleShoppingFeedPro.elementFieldValue(element, settings.productTypeField) %}
-                        {% if productTypeValue is instance of('craft\\elements\\db\\CategoryQuery') %}
-                            {% if productTypeValue|length %}
-                                {% set categories = [] %}
-                                {% for category in productTypeValue.all() %}
-                                    {% set categories = categories|merge([category.title]) %}
-                                {% endfor %}
-                                {% set productType = categories|join(' > ') %}
-                            {% endif %}
-                        {% else %}
-                            {% set productType = productTypeValue|striptags|trim %}
-                        {% endif %}
-                        {% if productType is defined and productType is not empty %}
-                            <g:product_type><![CDATA[{{ productType }}]]></g:product_type>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('product_type', element, settings.productTypeField, null, ' > ') }}
 
                     {# brand #}
-                    {% if settings.brandField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.brandField) %}
-                            {% set brand = settings.brandCustomValue %}
-                        {% else %}
-                            {% set brandValue = craft.googleShoppingFeedPro.elementFieldValue(element, settings.brandField) %}
-                            {% if brandValue is instance of('craft\\elements\\db\\ElementQuery') %}
-                                {% if brandValue|length %}
-                                    {% set brand = brandValue.one().title %}
-                                {% endif %}
-                            {% else %}
-                                {% set brand = brandValue %}
-                            {% endif %}
-                        {% endif %}
-                        {% if brand is defined %}
-                            {% set brand = brand|striptags|trim %}
-                            {% if brand is not empty %}
-                                <g:brand><![CDATA[{{ brand }}]]></g:brand>
-                            {% endif %}
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('brand', element, settings.brandField, settings.brandCustomValue) }}
 
                     {# gtin #}
-                    {% if settings.gtinField is not empty %}
-                        {% set gtin = craft.googleShoppingFeedPro.elementFieldValue(element, settings.gtinField)|striptags|trim %}
-                        {% if gtin is not empty %}
-                            <g:gtin><![CDATA[{{ gtin }}]]></g:gtin>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('gtin', element, settings.gtinField) }}
 
                     {# mpn #}
-                    {% if settings.mpnField is not empty %}
-                        {% set mpn = craft.googleShoppingFeedPro.elementFieldValue(element, settings.mpnField)|striptags|trim %}
-                        {% if mpn is not empty %}
-                            <g:mpn><![CDATA[{{ mpn }}]]></g:mpn>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('mpn', element, settings.mpnField) }}
 
                     {# identifier_exists #}
-                    {% if settings.identifierExistsField is not empty %}
-                        {% set identifierExists = craft.googleShoppingFeedPro.elementFieldValue(element, settings.identifierExistsField)|striptags|trim %}
-                        {% if identifierExists is not empty %}
-                            <g:identifier_exists><![CDATA[{{ identifierExists }}]]></g:identifier_exists>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('identifier_exists', element, settings.identifierExistsField) }}
 
                     {# condition #}
-                    {% if settings.conditionField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.conditionField) %}
-                            {% set condition = settings.conditionCustomValue %}
-                        {% else %}
-                            {% set condition = craft.googleShoppingFeedPro.elementFieldValue(element, settings.conditionField) %}
-                        {% endif %}
-                        {% set condition = condition|striptags|trim %}
-                        {% if condition is not empty %}
-                            <g:condition><![CDATA[{{ condition }}]]></g:condition>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('condition', element, settings.conditionField, settings.conditionCustomValue) }}
 
                     {# adult #}
-                    {% if settings.adultField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.adultField) %}
-                            {% set adult = settings.adultCustomValue %}
-                        {% else %}
-                            {% set adult = craft.googleShoppingFeedPro.elementFieldValue(element, settings.adultField) %}
-                        {% endif %}
-                        {% set adult = adult|striptags|trim %}
-                        {% if adult is not empty %}
-                            <g:adult><![CDATA[{{ adult }}]]></g:adult>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('adult', element, settings.adultField, settings.adultCustomValue) }}
 
                     {# multipack #}
-                    {% if settings.multipackField is not empty %}
-                        {% set multipack = craft.googleShoppingFeedPro.elementFieldValue(element, settings.multipackField)|striptags|trim %}
-                        {% if multipack is not empty %}
-                            <g:multipack><![CDATA[{{ multipack }}]]></g:multipack>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('multipack', element, settings.multipackField) }}
 
                     {# is_bundle #}
-                    {% if settings.isBundleField is not empty %}
-                        {% set isBundle = craft.googleShoppingFeedPro.elementFieldValue(element, settings.isBundleField)|striptags|trim %}
-                        {% if isBundle is not empty %}
-                            <g:is_bundle><![CDATA[{{ isBundle }}]]></g:is_bundle>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('is_bundle', element, settings.isBundleField) }}
 
                     {# energy_efficiency_class #}
-                    {% if settings.energyEfficiencyClassField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.energyEfficiencyClassField) %}
-                            {% set energyEfficiencyClass = settings.energyEfficiencyClassCustomValue %}
-                        {% else %}
-                            {% set energyEfficiencyClass = craft.googleShoppingFeedPro.elementFieldValue(element, settings.energyEfficiencyClassField) %}
-                        {% endif %}
-                        {% set energyEfficiencyClass = energyEfficiencyClass|striptags|trim %}
-                        {% if energyEfficiencyClass is not empty %}
-                            <g:energy_efficiency_class><![CDATA[{{ energyEfficiencyClass }}]]></g:energy_efficiency_class>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField(
+                        'energy_efficiency_class',
+                        element,
+                        settings.energyEfficiencyClassField,
+                        settings.energyEfficiencyClassCustomValue
+                    ) }}
 
                     {# min_energe_efficiency_class #}
-                    {% if settings.minEnergyEfficiencyClassField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.minEnergyEfficiencyClassField) %}
-                            {% set minEnergyEfficiencyClass = settings.minEnergyEfficiencyClassCustomValue %}
-                        {% else %}
-                            {% set minEnergyEfficiencyClass = craft.googleShoppingFeedPro.elementFieldValue(element, settings.minEnergyEfficiencyClassField) %}
-                        {% endif %}
-                        {% set minEnergyEfficiencyClass = minEnergyEfficiencyClass|striptags|trim %}
-                        {% if minEnergyEfficiencyClass is not empty %}
-                            <g:min_energy_efficiency_class><![CDATA[{{ minEnergyEfficiencyClass }}]]></g:min_energy_efficiency_class>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField(
+                        'min_energy_efficiency_class',
+                        element,
+                        settings.minEnergyEfficiencyClassField,
+                        settings.minEnergyEfficiencyClassCustomValue
+                    ) }}
 
                     {# max_energy_efficiency_class #}
-                    {% if settings.maxEnergyEfficiencyClassField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.maxEnergyEfficiencyClassField) %}
-                            {% set maxEnergyEfficiencyClass = settings.maxEnergyEfficiencyClassCustomValue %}
-                        {% else %}
-                            {% set maxEnergyEfficiencyClass = craft.googleShoppingFeedPro.elementFieldValue(element, settings.maxEnergyEfficiencyClassField) %}
-                        {% endif %}
-                        {% set maxEnergyEfficiencyClass = maxEnergyEfficiencyClass|striptags|trim %}
-                        {% if maxEnergyEfficiencyClass is not empty %}
-                            <g:max_energy_efficiency_class><![CDATA[{{ maxEnergyEfficiencyClass }}]]></g:max_energy_efficiency_class>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField(
+                        'max_energy_efficiency_class',
+                        element,
+                        settings.maxEnergyEfficiencyClassField,
+                        settings.maxEnergyEfficiencyClassCustomValue
+                    ) }}
 
                     {# age_group #}
-                    {% if settings.ageGroupField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.ageGroupField) %}
-                            {% set ageGroup = settings.ageGroupCustomValue %}
-                        {% else %}
-                            {% set ageGroup = craft.googleShoppingFeedPro.elementFieldValue(element, settings.ageGroupField) %}
-                        {% endif %}
-                        {% set ageGroup = ageGroup|striptags|trim %}
-                        {% if ageGroup is not empty %}
-                            <g:age_group><![CDATA[{{ ageGroup }}]]></g:age_group>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('age_group', element, settings.ageGroupField, settings.ageGroupCustomValue) }}
 
                     {# color #}
-                    {% if settings.colorField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.colorField) %}
-                            {% set color = settings.colorCustomValue %}
-                        {% else %}
-                            {% set color = craft.googleShoppingFeedPro.elementFieldValue(element, settings.colorField) %}
-                        {% endif %}
-                        {% set color = color|striptags|trim %}
-                        {% if color is not empty %}
-                            <g:color><![CDATA[{{ color }}]]></g:color>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('color', element, settings.colorField, settings.colorCustomValue) }}
 
                     {# gender #}
-                    {% if settings.genderField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.genderField) %}
-                            {% set gender = settings.genderCustomValue %}
-                        {% else %}
-                            {% set gender = craft.googleShoppingFeedPro.elementFieldValue(element, settings.genderField) %}
-                        {% endif %}
-                        {% set gender = gender|striptags|trim %}
-                        {% if gender is not empty %}
-                            <g:gender><![CDATA[{{ gender }}]]></g:gender>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('gender', element, settings.genderField, settings.genderCustomValue) }}
 
                     {# material #}
-                    {% if settings.materialField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.materialField) %}
-                            {% set material = settings.materialCustomValue %}
-                        {% else %}
-                            {% set material = craft.googleShoppingFeedPro.elementFieldValue(element, settings.materialField) %}
-                        {% endif %}
-                        {% set material = material|striptags|trim %}
-                        {% if material is not empty %}
-                            <g:material><![CDATA[{{ material }}]]></g:material>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('material', element, settings.materialField, settings.materialCustomValue) }}
 
                     {# pattern #}
-                    {% if settings.patternField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.patternField) %}
-                            {% set pattern = settings.patternCustomValue %}
-                        {% else %}
-                            {% set pattern = craft.googleShoppingFeedPro.elementFieldValue(element, settings.patternField) %}
-                        {% endif %}
-                        {% set pattern = pattern|striptags|trim %}
-                        {% if pattern is not empty %}
-                            <g:pattern><![CDATA[{{ pattern }}]]></g:pattern>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('pattern', element, settings.patternField, settings.patternCustomValue) }}
 
                     {# size #}
-                    {% if settings.sizeField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.sizeField) %}
-                            {% set size = settings.sizeCustomValue %}
-                        {% else %}
-                            {% set size = craft.googleShoppingFeedPro.elementFieldValue(element, settings.sizeField) %}
-                        {% endif %}
-                        {% set size = size|striptags|trim %}
-                        {% if size is not empty %}
-                            <g:size><![CDATA[{{ size }}]]></g:size>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('size', element, settings.sizeField, settings.sizeCustomValue) }}
 
                     {# size_type #}
-                    {% if settings.sizeTypeField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.sizeTypeField) %}
-                            {% set sizeType = settings.sizeTypeCustomValue %}
-                        {% else %}
-                            {% set sizeType = craft.googleShoppingFeedPro.elementFieldValue(element, settings.sizeTypeField) %}
-                        {% endif %}
-                        {% set sizeType = sizeType|striptags|trim %}
-                        {% if sizeType is not empty %}
-                            <g:size_type><![CDATA[{{ sizeType }}]]></g:size_type>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('size_type', element, settings.sizeTypeField, settings.sizeTypeCustomValue) }}
 
                     {# size_system #}
-                    {% if settings.sizeSystemField is not empty %}
-                        {% if craft.googleShoppingFeedPro.isCustomValue(settings.sizeSystemField) %}
-                            {% set sizeSystem = settings.sizeSystemCustomValue %}
-                        {% else %}
-                            {% set sizeSystem = craft.googleShoppingFeedPro.elementFieldValue(element, settings.sizeSystemField) %}
-                        {% endif %}
-                        {% set sizeSystem = sizeSystem|striptags|trim %}
-                        {% if sizeSystem is not empty %}
-                            <g:size_system><![CDATA[{{ sizeSystem }}]]></g:size_system>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('size_system', element, settings.sizeSystemField, settings.sizeSystemCustomValue) }}
 
                     {# item_group_id #}
-                    {% if settings.itemGroupIdField is not empty %}
-                        {% set itemGroupId = craft.googleShoppingFeedPro.elementFieldValue(element, settings.itemGroupIdField)|striptags|trim %}
-                        {% if itemGroupId is not empty %}
-                            <g:item_group_id><![CDATA[{{ itemGroupId }}]]></g:item_group_id>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('item_group_id', element, settings.itemGroupIdField) }}
 
                     {# product_length #}
-                    {% if settings.productLengthField is not empty %}
-                        {% set productLength = craft.googleShoppingFeedPro.elementFieldValue(element, settings.productLengthField)|striptags|trim %}
-                        {% if productLength is not empty %}
-                            {% if craft.googleShoppingFeedPro.isCustomValue(settings.productLengthUnitField) %}
-                                {% set productLengthUnit = settings.productLengthUnitCustomValue %}
-                            {% elseif settings.productLengthUnitField is not empty %}
-                                {% set productLengthUnit = craft.googleShoppingFeedPro.elementFieldValue(element, settings.productLengthUnitField) %}
-                            {% elseif isCommerceInstalled %}
-                                {% set productLengthUnit = craft.commerce.settings.dimensionUnits %}
-                            {% endif %}
-                            {% set productLengthUnit = productLengthUnit is defined ? productLengthUnit|striptags|trim %}
-                            <g:product_length>{{ (productLength|replace({',': '.'}) + 0) }}{{ productLengthUnit is not empty ? ' ' ~ productLengthUnit }}</g:product_length>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.measureField(
+                        'product_length',
+                        element,
+                        settings.productLengthField,
+                        settings.productLengthUnitField,
+                        settings.productLengthUnitCustomValue,
+                        (isCommerceInstalled ? craft.commerce.settings.dimensionUnits)
+                    ) }}
 
                     {# product_width #}
-                    {% if settings.productWidthField is not empty %}
-                        {% set productWidth = craft.googleShoppingFeedPro.elementFieldValue(element, settings.productWidthField)|striptags|trim %}
-                        {% if productWidth is not empty %}
-                            {% if craft.googleShoppingFeedPro.isCustomValue(settings.productWidthUnitField) %}
-                                {% set productWidthUnit = settings.productWidthUnitCustomValue %}
-                            {% elseif settings.productWidthUnitField is not empty %}
-                                {% set productWidthUnit = craft.googleShoppingFeedPro.elementFieldValue(element, settings.productWidthUnitField) %}
-                            {% elseif isCommerceInstalled %}
-                                {% set productWidthUnit = craft.commerce.settings.dimensionUnits %}
-                            {% endif %}
-                            {% set productWidthUnit = productWidthUnit is defined ? productWidthUnit|striptags|trim %}
-                            <g:product_width>{{ (productWidth|replace({',': '.'}) + 0) }}{{ productWidthUnit is not empty ? ' ' ~ productWidthUnit }}</g:product_width>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.measureField(
+                        'product_width',
+                        element,
+                        settings.productWidthField,
+                        settings.productWidthUnitField,
+                        settings.productWidthUnitCustomValue,
+                        (isCommerceInstalled ? craft.commerce.settings.dimensionUnits)
+                    ) }}
 
                     {# product_height #}
-                    {% if settings.productHeightField is not empty %}
-                        {% set productHeight = craft.googleShoppingFeedPro.elementFieldValue(element, settings.productHeightField)|striptags|trim %}
-                        {% if productHeight is not empty %}
-                            {% if craft.googleShoppingFeedPro.isCustomValue(settings.productHeightUnitField) %}
-                                {% set productHeightUnit = settings.productHeightUnitCustomValue %}
-                            {% elseif settings.productHeightUnitField is not empty %}
-                                {% set productHeightUnit = craft.googleShoppingFeedPro.elementFieldValue(element, settings.productHeightUnitField) %}
-                            {% elseif isCommerceInstalled %}
-                                {% set productHeightUnit = craft.commerce.settings.dimensionUnits %}
-                            {% endif %}
-                            {% set productHeightUnit = productHeightUnit is defined ? productHeightUnit|striptags|trim %}
-                            <g:product_height>{{ (productHeight|replace({',': '.'}) + 0) }}{{ productHeightUnit is not empty ? ' ' ~ productHeightUnit }}</g:product_height>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.measureField(
+                        'product_height',
+                        element,
+                        settings.productHeightField,
+                        settings.productHeightUnitField,
+                        settings.productHeightUnitCustomValue,
+                        (isCommerceInstalled ? craft.commerce.settings.dimensionUnits)
+                    ) }}
 
                     {# product_weight #}
-                    {% if settings.productWeightField is not empty %}
-                        {% set productWeight = craft.googleShoppingFeedPro.elementFieldValue(element, settings.productWeightField)|striptags|trim %}
-                        {% if productWeight is not empty %}
-                            {% if craft.googleShoppingFeedPro.isCustomValue(settings.productWeightUnitField) %}
-                                {% set productWeightUnit = settings.productWeightUnitCustomValue %}
-                            {% elseif settings.productWeightUnitField is not empty %}
-                                {% set productWeightUnit = craft.googleShoppingFeedPro.elementFieldValue(element, settings.productWeightUnitField) %}
-                            {% elseif isCommerceInstalled %}
-                                {% set productWeightUnit = craft.commerce.settings.weightUnits %}
-                            {% endif %}
-                            {% set productWeightUnit = productWeightUnit is defined ? productWeightUnit|striptags|trim %}
-                            <g:product_weight>{{ (productWeight|replace({',': '.'}) + 0) }}{{ productWeightUnit is not empty ? ' ' ~ productWeightUnit }}</g:product_weight>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.measureField(
+                        'product_weight',
+                        element,
+                        settings.productWeightField,
+                        settings.productWeightUnitField,
+                        settings.productWeightUnitCustomValue,
+                        (isCommerceInstalled ? craft.commerce.settings.weightUnits)
+                    ) }}
 
                     {# product_detail #}
-                    {% if settings.productDetailField is not empty %}
-                        {% set productDetail = craft.googleShoppingFeedPro.elementFieldValue(element, settings.productDetailField)|striptags|trim %}
-                        {% if productDetail is not empty %}
-                            <g:product_detail><![CDATA[{{ productDetail }}]]></g:product_detail>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('product_detail', element, settings.productDetailField) }}
 
                     {# product_highlight #}
-                    {% if settings.productHighlightField is not empty %}
-                        {% set productHighlight = craft.googleShoppingFeedPro.elementFieldValue(element, settings.productHighlightField)|striptags|trim %}
-                        {% if productHighlight is not empty %}
-                            <g:product_highlight><![CDATA[{{ productHighlight }}]]></g:product_highlight>
-                        {% endif %}
-                    {% endif %}
+                    {{ fields.baseField('product_highlight', element, settings.productHighlightField) }}
 
                 </item>
             {% endfor %}
