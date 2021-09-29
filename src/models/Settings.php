@@ -22,12 +22,40 @@ class Settings extends Model
     // =========================================================================
 
     const OPTION_CUSTOM_VALUE = '__custom_value__';
+    /**
+     * @since 1.1.0
+     */
+    const OPTION_USE_PRODUCT_ID = '__use_product_id__';
 
     const AVAILABILITY_IN_STOCK = 'in_stock';
     const AVAILABILITY_OUT_OF_STOCK = 'out_of_stock';
 
     // Public Properties
     // =========================================================================
+
+    /**
+     * Include variants.
+     *
+     * @var bool
+     * @since 1.1.0
+     */
+    public $includeVariants = false;
+
+    /**
+     * Use product URL for variants.
+     *
+     * @var bool
+     * @since 1.1.0
+     */
+    public $useProductUrl = true;
+
+    /**
+     * Use product data for variants.
+     *
+     * @var bool
+     * @since 1.1.0
+     */
+    public $useProductData = true;
 
     /**
      * ID [id] field.
@@ -662,12 +690,16 @@ class Settings extends Model
         $fieldOptions = array_merge(
             array_keys([
                 self::OPTION_CUSTOM_VALUE => Craft::t('google-shopping-feed-pro', 'Custom Value'),
+                self::OPTION_USE_PRODUCT_ID => Craft::t('google-shopping-feed-pro', 'Use Product ID'),
             ]),
             array_keys($this->getStandardFields()),
             array_keys($this->getCustomFields())
         );
 
         return [
+            ['includeVariants', 'boolean'],
+            ['useProductUrl', 'boolean'],
+            ['useProductData', 'boolean'],
             ['idField', 'in', 'range' => $fieldOptions],
             ['titleField', 'in', 'range' => $fieldOptions],
             ['descriptionField', 'in', 'range' => $fieldOptions],

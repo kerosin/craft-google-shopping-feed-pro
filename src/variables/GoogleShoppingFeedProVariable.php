@@ -14,6 +14,7 @@ use kerosin\googleshoppingfeedpro\services\GoogleShoppingFeedProService;
 use Craft;
 use craft\base\Element;
 use craft\commerce\elements\Product;
+use craft\commerce\elements\Variant;
 
 use Exception;
 
@@ -31,19 +32,30 @@ class GoogleShoppingFeedProVariable
      * @param Element $element
      * @param string $field
      * @return mixed
+     * @throws Exception
      */
     public function elementFieldValue(Element $element, string $field)
     {
         $settings = GoogleShoppingFeedPro::$plugin->getSettings();
+        $object = $element;
 
-        if (
-            Craft::$app->getPlugins()->isPluginInstalled('commerce') &&
-            $element instanceof Product &&
-            in_array($field, array_keys($settings::getCommerceStandardFields()))
-        ) {
-            $object = $element->getDefaultVariant();
-        } else {
-            $object = $element;
+        if (Craft::$app->getPlugins()->isPluginInstalled('commerce')) {
+            if ($element instanceof Product) {
+                if (isset($element->getDefaultVariant()->$field)) {
+                    $object = $element->getDefaultVariant();
+                }
+            } elseif ($element instanceof Variant) {
+                $product = $element->getProduct();
+
+                if (
+                    !isset($element->$field) &&
+                    $settings->useProductData &&
+                    $product != null &&
+                    isset($product->$field)
+                ) {
+                    $object = $element->getProduct();
+                }
+            }
         }
 
         return isset($object->$field) ? $object->$field : null;
@@ -58,6 +70,18 @@ class GoogleShoppingFeedProVariable
         $settings = GoogleShoppingFeedPro::$plugin->getSettings();
 
         return $value == $settings::OPTION_CUSTOM_VALUE;
+    }
+
+    /**
+     * @param string $value
+     * @return bool
+     * @since 1.1.0
+     */
+    public function isUseProductId(?string $value): bool
+    {
+        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
+
+        return $value == $settings::OPTION_USE_PRODUCT_ID;
     }
 
     /**

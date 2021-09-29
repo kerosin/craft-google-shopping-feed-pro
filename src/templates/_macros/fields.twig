@@ -1,7 +1,25 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * @author    kerosin
+ * @copyright Copyright (c) 2021 kerosin
+ * @link      https://github.com/kerosin
+ * @package   GoogleShoppingFeedPro
+ * @since     1.0.1
+ */
+#}
+
 {% macro baseField(tag, element, field, customValue, separator = ',') %}
     {% if field is not empty %}
         {% if craft.googleShoppingFeedPro.isCustomValue(field) %}
             {% set value = customValue %}
+        {% elseif craft.googleShoppingFeedPro.isUseProductId(field) %}
+            {% if
+                element is instance of ('craft\\commerce\\elements\\Variant') and
+                element.product is not empty
+            %}
+                {% set value = element.product.id %}
+            {% endif %}
         {% else %}
             {% set fieldValue = craft.googleShoppingFeedPro.elementFieldValue(element, field) %}
             {% if fieldValue is instance of('DateTime') %}

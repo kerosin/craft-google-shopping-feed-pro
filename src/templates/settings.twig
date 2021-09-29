@@ -1,10 +1,6 @@
 {# @var craft \craft\web\twig\variables\CraftVariable #}
 {#
 /**
- * Google Shopping Feed Pro plugin for Craft CMS 3.x
- *
- * Google Shopping Feed Pro settings.twig
- *
  * @author    kerosin
  * @copyright Copyright (c) 2021 kerosin
  * @link      https://github.com/kerosin
@@ -17,6 +13,41 @@
 
 {% set fieldOptions = settings.getFieldOptions() %}
 {% set isCommerceInstalled = craft.app.plugins.isPluginInstalled('commerce') %}
+
+{% if isCommerceInstalled %}
+    <h2>{{ 'General'|t('google-shopping-feed-pro') }}</h2>
+
+    <h3>{{ 'Variants'|t('google-shopping-feed-pro') }}</h3>
+
+    {{ forms.lightswitchField({
+        label: 'Include Variants'|t('google-shopping-feed-pro'),
+        id: 'includeVariants',
+        name: 'includeVariants',
+        on: settings.includeVariants,
+        errors: settings.getErrors('includeVariants'),
+        toggle: 'includeVariants-dependent-fields'
+    }) }}
+
+    <div id="includeVariants-dependent-fields"{{ not settings.includeVariants ? ' class="hidden"' }}>
+        {{ forms.lightswitchField({
+            label: 'Use Product Url for Variants'|t('google-shopping-feed-pro'),
+            id: 'useProductUrl',
+            name: 'useProductUrl',
+            on: settings.useProductUrl,
+            errors: settings.getErrors('useProductUrl')
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Use Product Data for Variants'|t('google-shopping-feed-pro'),
+            id: 'useProductData',
+            name: 'useProductData',
+            on: settings.useProductData,
+            errors: settings.getErrors('useProductData')
+        }) }}
+    </div>
+
+    <hr>
+{% endif %}
 
 <h2>{{ 'Fields Mapping'|t('google-shopping-feed-pro') }}</h2>
 
@@ -716,13 +747,23 @@
     }) }}
 </div>
 
+{% set itemGroupIdFieldOptions = [{label: '', value: ''}] %}
+{% if isCommerceInstalled %}
+    {% set itemGroupIdFieldOptions = itemGroupIdFieldOptions|merge([
+        {
+            label: 'Use Product ID'|t('google-shopping-feed-pro'),
+            value: constant('OPTION_USE_PRODUCT_ID', settings)
+        }
+    ]) %}
+{% endif %}
+
 {{ forms.selectField({
     label: 'Item Group ID'|t('google-shopping-feed-pro'),
     instructions: 'ID for a group of products that come in different versions (variants).'|t('google-shopping-feed-pro'),
     id: 'itemGroupIdField',
     name: 'itemGroupIdField',
     value: settings.itemGroupIdField,
-    options: {'': ''}|merge(fieldOptions),
+    options: itemGroupIdFieldOptions|merge(fieldOptions),
     errors: settings.getErrors('itemGroupIdField')
 }) }}
 

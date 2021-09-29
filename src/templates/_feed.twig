@@ -1,4 +1,13 @@
-{% import 'google-shopping-feed-pro/_macros/fields' as fields %}
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * @author    kerosin
+ * @copyright Copyright (c) 2021 kerosin
+ * @link      https://github.com/kerosin
+ * @package   GoogleShoppingFeedPro
+ * @since     1.0.0
+ */
+#}
 {% spaceless %}
     {% set isCommerceInstalled = craft.app.plugins.isPluginInstalled('commerce') %}
     <?xml version="1.0" encoding="UTF-8"?>
@@ -8,267 +17,18 @@
             <link><![CDATA[{{ siteUrl }}]]></link>
 
             {% for element in elements %}
-                <item>
-
-                    {# id #}
-                    {{ fields.baseField('id', element, settings.idField) }}
-
-                    {# title #}
-                    {{ fields.baseField('title', element, settings.titleField) }}
-
-                    {# description #}
-                    {{ fields.baseField('description', element, settings.descriptionField) }}
-
-                    {# link #}
-                    {% if element.url is not empty %}
-                        <g:link><![CDATA[{{ element.url }}]]></g:link>
-                    {% endif %}
-
-                    {# image_link #}
-                    {{ fields.assetField('image_link', element, settings.imageLinkField) }}
-
-                    {# additional_image_link #}
-                    {{ fields.assetField('additional_image_link', element, settings.additionalImageLinkField, true) }}
-
-                    {# availability #}
-                    {% if craft.googleShoppingFeedPro.isCustomValue(settings.availabilityField) %}
-                        {% set availability = settings.availabilityCustomValue %}
-                    {% elseif settings.availabilityField is not empty %}
-                        {% set availability = craft.googleShoppingFeedPro.elementFieldValue(
-                            element,
-                            settings.availabilityField
-                        ) %}
-                    {% elseif isCommerceInstalled %}
-                        {% if element is instance of('craft\\commerce\\elements\\Product') %}
-                            {% if element.defaultVariant.hasUnlimitedStock or element.defaultVariant.stock > 0 %}
-                                {% set availability = constant('AVAILABILITY_IN_STOCK', settings) %}
-                            {% else %}
-                                {% set availability = constant('AVAILABILITY_OUT_OF_STOCK', settings) %}
-                            {% endif %}
-                        {% endif %}
-                    {% endif %}
-                    {% if availability is defined and availability is not empty %}
-                        {% set availability = availability|striptags|trim %}
-                    {% else %}
-                        {% set availability = constant('AVAILABILITY_IN_STOCK', settings) %}
-                    {% endif %}
-                    <g:availability><![CDATA[{{ availability }}]]></g:availability>
-
-                    {# availability_date #}
-                    {{ fields.baseField('availability_date', element, settings.availabilityDateField) }}
-
-                    {# cost_of_goods_sold #}
-                    {{ fields.measureField(
-                        'cost_of_goods_sold',
-                        element,
-                        settings.costOfGoodsSoldField,
-                        settings.currencyField,
-                        settings.currencyCustomValue,
-                        (isCommerceInstalled ? craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso),
-                        true
-                    ) }}
-
-                    {# expiration_date #}
-                    {{ fields.baseField('expiration_date', element, settings.expirationDateField) }}
-
-                    {# price #}
-                    {{ fields.measureField(
-                        'price',
-                        element,
-                        settings.priceField,
-                        settings.currencyField,
-                        settings.currencyCustomValue,
-                        (isCommerceInstalled ? craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso),
-                        true
-                    ) }}
-
-                    {# sale_price #}
-                    {{ fields.measureField(
-                        'sale_price',
-                        element,
-                        settings.salePriceField,
-                        settings.currencyField,
-                        settings.currencyCustomValue,
-                        (isCommerceInstalled ? craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso),
-                        true
-                    ) }}
-
-                    {# sale_price_effective_date #}
-                    {% if settings.salePriceField is not empty %}
-                        {{ fields.dateRangeField(
-                            'sale_price_effective_date',
-                            element,
-                            settings.salePriceEffectiveDateFromField,
-                            settings.salePriceEffectiveDateToField
-                        ) }}
-                    {% endif %}
-
-                    {# unit_pricing_measure #}
-                    {{ fields.measureField(
-                        'unit_pricing_measure',
-                        element,
-                        settings.unitPricingMeasureField,
-                        settings.unitPricingMeasureUnitField,
-                        settings.unitPricingMeasureUnitCustomValue,
-                        null,
-                        false,
-                        false
-                    ) }}
-
-                    {# unit_pricing_base_measure #}
-                    {{ fields.measureField(
-                        'unit_pricing_base_measure',
-                        element,
-                        settings.unitPricingBaseMeasureField,
-                        settings.unitPricingBaseMeasureUnitField,
-                        settings.unitPricingBaseMeasureUnitCustomValue,
-                        null,
-                        false,
-                        false
-                    ) }}
-
-                    {# installment #}
-                    {{ fields.baseField('installment', element, settings.installmentField) }}
-
-                    {# subscription_cost #}
-                    {{ fields.baseField('subscription_cost', element, settings.subscriptionCostField) }}
-
-                    {# loyalty_points #}
-                    {{ fields.baseField('loyalty_points', element, settings.loyaltyPointsField) }}
-
-                    {# google_product_category #}
-                    {{ fields.baseField(
-                        'google_product_category',
-                        element,
-                        settings.googleProductCategoryField,
-                        settings.googleProductCategoryCustomValue
-                    ) }}
-
-                    {# product_type #}
-                    {{ fields.baseField('product_type', element, settings.productTypeField, null, ' > ') }}
-
-                    {# brand #}
-                    {{ fields.baseField('brand', element, settings.brandField, settings.brandCustomValue) }}
-
-                    {# gtin #}
-                    {{ fields.baseField('gtin', element, settings.gtinField) }}
-
-                    {# mpn #}
-                    {{ fields.baseField('mpn', element, settings.mpnField) }}
-
-                    {# identifier_exists #}
-                    {{ fields.baseField('identifier_exists', element, settings.identifierExistsField) }}
-
-                    {# condition #}
-                    {{ fields.baseField('condition', element, settings.conditionField, settings.conditionCustomValue) }}
-
-                    {# adult #}
-                    {{ fields.baseField('adult', element, settings.adultField, settings.adultCustomValue) }}
-
-                    {# multipack #}
-                    {{ fields.baseField('multipack', element, settings.multipackField) }}
-
-                    {# is_bundle #}
-                    {{ fields.baseField('is_bundle', element, settings.isBundleField) }}
-
-                    {# energy_efficiency_class #}
-                    {{ fields.baseField(
-                        'energy_efficiency_class',
-                        element,
-                        settings.energyEfficiencyClassField,
-                        settings.energyEfficiencyClassCustomValue
-                    ) }}
-
-                    {# min_energe_efficiency_class #}
-                    {{ fields.baseField(
-                        'min_energy_efficiency_class',
-                        element,
-                        settings.minEnergyEfficiencyClassField,
-                        settings.minEnergyEfficiencyClassCustomValue
-                    ) }}
-
-                    {# max_energy_efficiency_class #}
-                    {{ fields.baseField(
-                        'max_energy_efficiency_class',
-                        element,
-                        settings.maxEnergyEfficiencyClassField,
-                        settings.maxEnergyEfficiencyClassCustomValue
-                    ) }}
-
-                    {# age_group #}
-                    {{ fields.baseField('age_group', element, settings.ageGroupField, settings.ageGroupCustomValue) }}
-
-                    {# color #}
-                    {{ fields.baseField('color', element, settings.colorField, settings.colorCustomValue) }}
-
-                    {# gender #}
-                    {{ fields.baseField('gender', element, settings.genderField, settings.genderCustomValue) }}
-
-                    {# material #}
-                    {{ fields.baseField('material', element, settings.materialField, settings.materialCustomValue) }}
-
-                    {# pattern #}
-                    {{ fields.baseField('pattern', element, settings.patternField, settings.patternCustomValue) }}
-
-                    {# size #}
-                    {{ fields.baseField('size', element, settings.sizeField, settings.sizeCustomValue) }}
-
-                    {# size_type #}
-                    {{ fields.baseField('size_type', element, settings.sizeTypeField, settings.sizeTypeCustomValue) }}
-
-                    {# size_system #}
-                    {{ fields.baseField('size_system', element, settings.sizeSystemField, settings.sizeSystemCustomValue) }}
-
-                    {# item_group_id #}
-                    {{ fields.baseField('item_group_id', element, settings.itemGroupIdField) }}
-
-                    {# product_length #}
-                    {{ fields.measureField(
-                        'product_length',
-                        element,
-                        settings.productLengthField,
-                        settings.productLengthUnitField,
-                        settings.productLengthUnitCustomValue,
-                        (isCommerceInstalled ? craft.commerce.settings.dimensionUnits)
-                    ) }}
-
-                    {# product_width #}
-                    {{ fields.measureField(
-                        'product_width',
-                        element,
-                        settings.productWidthField,
-                        settings.productWidthUnitField,
-                        settings.productWidthUnitCustomValue,
-                        (isCommerceInstalled ? craft.commerce.settings.dimensionUnits)
-                    ) }}
-
-                    {# product_height #}
-                    {{ fields.measureField(
-                        'product_height',
-                        element,
-                        settings.productHeightField,
-                        settings.productHeightUnitField,
-                        settings.productHeightUnitCustomValue,
-                        (isCommerceInstalled ? craft.commerce.settings.dimensionUnits)
-                    ) }}
-
-                    {# product_weight #}
-                    {{ fields.measureField(
-                        'product_weight',
-                        element,
-                        settings.productWeightField,
-                        settings.productWeightUnitField,
-                        settings.productWeightUnitCustomValue,
-                        (isCommerceInstalled ? craft.commerce.settings.weightUnits)
-                    ) }}
-
-                    {# product_detail #}
-                    {{ fields.baseField('product_detail', element, settings.productDetailField) }}
-
-                    {# product_highlight #}
-                    {{ fields.baseField('product_highlight', element, settings.productHighlightField) }}
-
-                </item>
+                {% if
+                    isCommerceInstalled and
+                    settings.includeVariants and
+                    element is instance of ('craft\\commerce\\elements\\Product') and
+                    element.type.hasVariants
+                %}
+                    {% for variant in element.variants() %}
+                        {% include 'google-shopping-feed-pro/_includes/item' with {element: variant} %}
+                    {% endfor %}
+                {% else %}
+                    {% include 'google-shopping-feed-pro/_includes/item' %}
+                {% endif %}
             {% endfor %}
 
         </channel>
