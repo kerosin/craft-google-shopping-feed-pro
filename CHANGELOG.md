@@ -1,5 +1,9 @@
 # Google Shopping Feed Pro Changelog
 
+## 1.1.0 - 2021-09-30
+### Added
+- Added product variants support
+
 ## 1.0.1 - 2021-09-27
 ### Added
 - Added macros to feed template
