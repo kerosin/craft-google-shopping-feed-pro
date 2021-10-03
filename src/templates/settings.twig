@@ -142,6 +142,56 @@
     targetPrefix: 'currency-field'
 }) }}
 
+{{ forms.selectField({
+    label: 'Sale Price'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s sale price. Optional.'|t('google-shopping-feed-pro'),
+    id: 'salePriceField',
+    name: 'salePriceField',
+    value: settings.salePriceField,
+    options: {'': ''}|merge(fieldOptions),
+    errors: settings.getErrors('salePriceField')
+}) }}
+
+{% set salePriceEffectiveDateFromFieldOptions = [{label: '', value: ''}] %}
+{% if isCommerceInstalled %}
+    {% set salePriceEffectiveDateFromFieldOptions = salePriceEffectiveDateFromFieldOptions|merge([
+        {
+            label: 'Use Sale Start Date'|t('google-shopping-feed-pro'),
+            value: constant('OPTION_USE_SALE_START_DATE', settings)
+        }
+    ]) %}
+{% endif %}
+
+{{ forms.selectField({
+    label: 'Sale Price Effective Date From'|t('google-shopping-feed-pro'),
+    instructions: 'The date during which the sale price applies. Optional.'|t('google-shopping-feed-pro'),
+    id: 'salePriceEffectiveDateFromField',
+    name: 'salePriceEffectiveDateFromField',
+    value: settings.salePriceEffectiveDateFromField,
+    options: salePriceEffectiveDateFromFieldOptions|merge(fieldOptions),
+    errors: settings.getErrors('salePriceEffectiveDateFromField')
+}) }}
+
+{% set salePriceEffectiveDateToFieldOptions = [{label: '', value: ''}] %}
+{% if isCommerceInstalled %}
+    {% set salePriceEffectiveDateToFieldOptions = salePriceEffectiveDateToFieldOptions|merge([
+        {
+            label: 'Use Sale End Date'|t('google-shopping-feed-pro'),
+            value: constant('OPTION_USE_SALE_END_DATE', settings)
+        }
+    ]) %}
+{% endif %}
+
+{{ forms.selectField({
+    label: 'Sale Price Effective Date To'|t('google-shopping-feed-pro'),
+    instructions: 'The date during which the sale price applies. Optional.'|t('google-shopping-feed-pro'),
+    id: 'salePriceEffectiveDateToField',
+    name: 'salePriceEffectiveDateToField',
+    value: settings.salePriceEffectiveDateToField,
+    options: salePriceEffectiveDateToFieldOptions|merge(fieldOptions),
+    errors: settings.getErrors('salePriceEffectiveDateToField')
+}) }}
+
 <div id="currency-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.currencyField) ? ' class="hidden"' }}>
     {{ forms.textField({
         id: 'currencyCustomValue',
@@ -285,36 +335,6 @@
     value: settings.expirationDateField,
     options: {'': ''}|merge(fieldOptions),
     errors: settings.getErrors('expirationDateField')
-}) }}
-
-{{ forms.selectField({
-    label: 'Sale Price'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s sale price. Optional.'|t('google-shopping-feed-pro'),
-    id: 'salePriceField',
-    name: 'salePriceField',
-    value: settings.salePriceField,
-    options: {'': ''}|merge(fieldOptions),
-    errors: settings.getErrors('salePriceField')
-}) }}
-
-{{ forms.selectField({
-    label: 'Sale Price Effective Date From'|t('google-shopping-feed-pro'),
-    instructions: 'The date during which the sale price applies. Optional.'|t('google-shopping-feed-pro'),
-    id: 'salePriceEffectiveDateFromField',
-    name: 'salePriceEffectiveDateFromField',
-    value: settings.salePriceEffectiveDateFromField,
-    options: {'': ''}|merge(fieldOptions),
-    errors: settings.getErrors('salePriceEffectiveDateFromField')
-}) }}
-
-{{ forms.selectField({
-    label: 'Sale Price Effective Date To'|t('google-shopping-feed-pro'),
-    instructions: 'The date during which the sale price applies. Optional.'|t('google-shopping-feed-pro'),
-    id: 'salePriceEffectiveDateToField',
-    name: 'salePriceEffectiveDateToField',
-    value: settings.salePriceEffectiveDateToField,
-    options: {'': ''}|merge(fieldOptions),
-    errors: settings.getErrors('salePriceEffectiveDateToField')
 }) }}
 
 {{ forms.selectField({

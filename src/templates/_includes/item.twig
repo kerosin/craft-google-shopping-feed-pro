@@ -106,24 +106,56 @@
     ) }}
 
     {# sale_price #}
-    {{ fields.measureField(
-        'sale_price',
-        element,
-        settings.salePriceField,
-        settings.currencyField,
-        settings.currencyCustomValue,
-        (isCommerceInstalled ? craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso),
-        true
-    ) }}
+    {% if settings.priceField is not empty and settings.salePriceField is not empty %}
+        {% set price = craft.googleShoppingFeedPro.elementFieldValue(element, settings.priceField) %}
+        {% set salePrice = craft.googleShoppingFeedPro.elementFieldValue(element, settings.salePriceField) %}
+        {% if price is not empty and salePrice is not empty and salePrice < price %}
+            {{ fields.measureField(
+                'sale_price',
+                element,
+                settings.salePriceField,
+                settings.currencyField,
+                settings.currencyCustomValue,
+                (isCommerceInstalled ? craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso),
+                true
+            ) }}
 
-    {# sale_price_effective_date #}
-    {% if settings.salePriceField is not empty %}
-        {{ fields.dateRangeField(
-            'sale_price_effective_date',
-            element,
-            settings.salePriceEffectiveDateFromField,
-            settings.salePriceEffectiveDateToField
-        ) }}
+            {# sale_price_effective_date #}
+            {% if
+                settings.salePriceEffectiveDateFromField is not empty and
+                settings.salePriceEffectiveDateToField is not empty
+            %}
+                {% if craft.googleShoppingFeedPro.isUseSaleStartDate(settings.salePriceEffectiveDateFromField) %}
+                    {% set dateFrom = craft.googleShoppingFeedPro.elementSalesMinStartDate(element) %}
+                {% else %}
+                    {% set dateFrom = craft.googleShoppingFeedPro.elementFieldValue(
+                        element,
+                        settings.salePriceEffectiveDateFromField
+                    ) %}
+                {% endif %}
+                {% if dateFrom is instance of('DateTime') %}
+                    {% set dateFrom = dateFrom|atom %}
+                {% else %}
+                    {% set dateFrom = dateFrom|striptags|trim %}
+                {% endif %}
+                {% if craft.googleShoppingFeedPro.isUseSaleEndDate(settings.salePriceEffectiveDateToField) %}
+                    {% set dateTo = craft.googleShoppingFeedPro.elementSalesMaxEndDate(element) %}
+                {% else %}
+                    {% set dateTo = craft.googleShoppingFeedPro.elementFieldValue(
+                        element,
+                        settings.salePriceEffectiveDateToField
+                    ) %}
+                {% endif %}
+                {% if dateTo is instance of('DateTime') %}
+                    {% set dateTo = dateTo|atom %}
+                {% else %}
+                    {% set dateTo = dateTo|striptags|trim %}
+                {% endif %}
+                {% if dateFrom is not empty and dateTo is not empty %}
+                    <g:sale_price_effective_date><![CDATA[{{ dateFrom }}/{{ dateTo }}]]></g:sale_price_effective_date>
+                {% endif %}
+            {% endif %}
+        {% endif %}
     {% endif %}
 
     {# unit_pricing_measure #}

@@ -26,6 +26,14 @@ class Settings extends Model
      * @since 1.1.0
      */
     const OPTION_USE_PRODUCT_ID = '__use_product_id__';
+    /**
+     * @since 1.2.0
+     */
+    const OPTION_USE_SALE_START_DATE = '__use_sale_start_date__';
+    /**
+     * @since 1.2.0
+     */
+    const OPTION_USE_SALE_END_DATE = '__use_sale_end_date__';
 
     const AVAILABILITY_IN_STOCK = 'in_stock';
     const AVAILABILITY_OUT_OF_STOCK = 'out_of_stock';
@@ -612,6 +620,7 @@ class Settings extends Model
         return [
             'sku' => Craft::t('google-shopping-feed-pro', 'SKU'),
             'price' => Craft::t('google-shopping-feed-pro', 'Price'),
+            'salePrice' => Craft::t('google-shopping-feed-pro', 'Sale Price'),
             'length' => Craft::t('google-shopping-feed-pro', 'Dimensions (L)'),
             'width' => Craft::t('google-shopping-feed-pro', 'Dimensions (W)'),
             'height' => Craft::t('google-shopping-feed-pro', 'Dimensions (H)'),
@@ -691,6 +700,8 @@ class Settings extends Model
             array_keys([
                 self::OPTION_CUSTOM_VALUE => Craft::t('google-shopping-feed-pro', 'Custom Value'),
                 self::OPTION_USE_PRODUCT_ID => Craft::t('google-shopping-feed-pro', 'Use Product ID'),
+                self::OPTION_USE_SALE_START_DATE => Craft::t('google-shopping-feed-pro', 'Use Sale Start Date'),
+                self::OPTION_USE_SALE_END_DATE => Craft::t('google-shopping-feed-pro', 'Use Sale End Date'),
             ]),
             array_keys($this->getStandardFields()),
             array_keys($this->getCustomFields())

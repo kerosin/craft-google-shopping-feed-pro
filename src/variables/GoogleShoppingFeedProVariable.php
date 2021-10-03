@@ -16,6 +16,7 @@ use craft\base\Element;
 use craft\commerce\elements\Product;
 use craft\commerce\elements\Variant;
 
+use DateTime;
 use Exception;
 
 /**
@@ -62,6 +63,86 @@ class GoogleShoppingFeedProVariable
     }
 
     /**
+     * @param Element $element
+     * @return DateTime|null
+     * @since 1.2.0
+     */
+    public function elementSalesMinStartDate(Element $element): ?DateTime
+    {
+        $result = null;
+
+        if (
+            !Craft::$app->getPlugins()->isPluginInstalled('commerce') ||
+            !($element instanceof Product || $element instanceof Variant)
+        ) {
+            return $result;
+        }
+
+        if ($element instanceof Product) {
+            $sales = $element->getDefaultVariant()->getSales();
+        } else {
+            $sales = $element->getSales();
+        }
+
+        if ($sales == null || count($sales) == 0) {
+            return $result;
+        }
+
+        foreach ($sales as $sale) {
+            if ($sale->dateFrom == null) {
+                $result = null;
+                break;
+            }
+
+            if ($result == null || $sale->dateFrom < $result) {
+                $result = $sale->dateFrom;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param Element $element
+     * @return DateTime|null
+     * @since 1.2.0
+     */
+    public function elementSalesMaxEndDate(Element $element): ?DateTime
+    {
+        $result = null;
+
+        if (
+            !Craft::$app->getPlugins()->isPluginInstalled('commerce') ||
+            !($element instanceof Product || $element instanceof Variant)
+        ) {
+            return $result;
+        }
+
+        if ($element instanceof Product) {
+            $sales = $element->getDefaultVariant()->getSales();
+        } else {
+            $sales = $element->getSales();
+        }
+
+        if ($sales == null || count($sales) == 0) {
+            return $result;
+        }
+
+        foreach ($sales as $sale) {
+            if ($sale->dateTo == null) {
+                $result = null;
+                break;
+            }
+
+            if ($result == null || $sale->dateTo > $result) {
+                $result = $sale->dateTo;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * @param string $value
      * @return bool
      */
@@ -82,6 +163,30 @@ class GoogleShoppingFeedProVariable
         $settings = GoogleShoppingFeedPro::$plugin->getSettings();
 
         return $value == $settings::OPTION_USE_PRODUCT_ID;
+    }
+
+    /**
+     * @param string $value
+     * @return bool
+     * @since 1.2.0
+     */
+    public function isUseSaleStartDate(?string $value): bool
+    {
+        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
+
+        return $value == $settings::OPTION_USE_SALE_START_DATE;
+    }
+
+    /**
+     * @param string $value
+     * @return bool
+     * @since 1.2.0
+     */
+    public function isUseSaleEndDate(?string $value): bool
+    {
+        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
+
+        return $value == $settings::OPTION_USE_SALE_END_DATE;
     }
 
     /**
