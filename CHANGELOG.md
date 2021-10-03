@@ -1,5 +1,9 @@
 # Google Shopping Feed Pro Changelog
 
+## 1.2.0 - 2021-10-03
+### Added
+- Added "Sale Price" option
+
 ## 1.1.0 - 2021-09-30
 ### Added
 - Added product variants support
