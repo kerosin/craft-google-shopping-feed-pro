@@ -142,6 +142,15 @@
     targetPrefix: 'currency-field'
 }) }}
 
+<div id="currency-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.currencyField) ? ' class="hidden"' }}>
+    {{ forms.textField({
+        id: 'currencyCustomValue',
+        name: 'currencyCustomValue',
+        value: settings.currencyCustomValue,
+        errors: settings.getErrors('currencyCustomValue')
+    }) }}
+</div>
+
 {{ forms.selectField({
     label: 'Sale Price'|t('google-shopping-feed-pro'),
     instructions: 'The product\'s sale price. Optional.'|t('google-shopping-feed-pro'),
@@ -191,15 +200,6 @@
     options: salePriceEffectiveDateToFieldOptions|merge(fieldOptions),
     errors: settings.getErrors('salePriceEffectiveDateToField')
 }) }}
-
-<div id="currency-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.currencyField) ? ' class="hidden"' }}>
-    {{ forms.textField({
-        id: 'currencyCustomValue',
-        name: 'currencyCustomValue',
-        value: settings.currencyCustomValue,
-        errors: settings.getErrors('currencyCustomValue')
-    }) }}
-</div>
 
 <h3>{{ 'Product Identifiers'|t('google-shopping-feed-pro') }}</h3>
 
