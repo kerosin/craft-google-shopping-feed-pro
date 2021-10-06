@@ -1,5 +1,9 @@
 # Google Shopping Feed Pro Changelog
 
+## 1.2.2 - 2021-10-06
+### Added
+- Added usability improvements
+
 ## 1.2.1 - 2021-10-04
 ### Fixed
 - Fixed currency custom value field position
