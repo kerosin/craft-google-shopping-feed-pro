@@ -11,8 +11,16 @@
 
 {% import '_includes/forms' as forms %}
 
+{% do view.registerAssetBundle('kerosin\\googleshoppingfeedpro\\assetbundles\\googleshoppingfeedpro\\GoogleShoppingFeedProAsset') %}
+
 {% set fieldOptions = settings.getFieldOptions() %}
 {% set isCommerceInstalled = craft.app.plugins.isPluginInstalled('commerce') %}
+
+{% if craft.app.plugins.pluginInfo('google-shopping-feed-pro').isTrial %}
+    <div class="warning-alert warning with-icon">
+        {{ 'This is a Trial version. The feed is limited to 10 items.'|t('google-shopping-feed-pro') }}
+    </div>
+{% endif %}
 
 {% if isCommerceInstalled %}
     <h2>{{ 'General'|t('google-shopping-feed-pro') }}</h2>

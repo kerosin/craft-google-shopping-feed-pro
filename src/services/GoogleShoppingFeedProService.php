@@ -80,6 +80,10 @@ class GoogleShoppingFeedProService extends Component
      */
     public function getFeedXml(array $elements): string
     {
+        if (Craft::$app->getPlugins()->getPluginInfo('google-shopping-feed-pro')['isTrial']) {
+            $elements = array_slice($elements, 0, 10);
+        }
+
         $settings = GoogleShoppingFeedPro::$plugin->getSettings();
 
         return Craft::$app->getView()->renderTemplate(

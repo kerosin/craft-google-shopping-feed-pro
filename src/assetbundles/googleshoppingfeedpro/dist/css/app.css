@@ -1,0 +1,15 @@
+/**
+ * @author    kerosin
+ * @copyright Copyright (c) 2021 kerosin
+ * @link      https://github.com/kerosin
+ * @package   GoogleShoppingFeedPro
+ * @since     1.2.2
+ */
+
+.warning-alert {
+    padding: 10px 10px;
+    background: #b44d12;
+    border-radius: 3px;
+    color: #fff !important;
+    font-weight: 700;
+}
