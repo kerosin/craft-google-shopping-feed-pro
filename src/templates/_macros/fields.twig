@@ -9,7 +9,7 @@
  */
 #}
 
-{% macro baseField(tag, element, field, customValue, separator = ',') %}
+{% macro baseField(tag, element, field, customValue = null, separator = ',') %}
     {% if field is not empty %}
         {% if craft.googleShoppingFeedPro.isCustomValue(field) %}
             {% set value = customValue %}
@@ -47,7 +47,7 @@
     {% endif %}
 {% endmacro %}
 
-{% macro measureField(tag, element, field, unitField, unitCustomValue, unitDefaultValue, format = false, spaceUnit = true) %}
+{% macro measureField(tag, element, field, unitField, unitCustomValue = null, unitDefaultValue = null, format = false, spaceUnit = true) %}
     {% if field is not empty %}
         {% set value = craft.googleShoppingFeedPro.elementFieldValue(element, field)|striptags|trim %}
         {% if value is not empty %}
