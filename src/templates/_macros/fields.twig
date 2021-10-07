@@ -24,12 +24,42 @@
             {% set fieldValue = craft.googleShoppingFeedPro.elementFieldValue(element, field) %}
             {% if fieldValue is instance of('DateTime') %}
                 {% set value = fieldValue|atom %}
+            {% elseif fieldValue is instance of('craft\\elements\\db\\AssetQuery') %}
+                {% if fieldValue|length %}
+                    {% set items = [] %}
+                    {% for item in fieldValue.all() %}
+                        {% if item.url is defined and item.url is not empty %}
+                            {% set items = items|merge([item.url]) %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set value = items|join(separator) %}
+                {% endif %}
+            {% elseif fieldValue is instance of('craft\\elements\\db\\UserQuery') %}
+                {% if fieldValue|length %}
+                    {% set items = [] %}
+                    {% for item in fieldValue.all() %}
+                        {% if item.username is defined and item.username is not empty %}
+                            {% set items = items|merge([item.username]) %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set value = items|join(separator) %}
+                {% endif %}
             {% elseif fieldValue is instance of('craft\\elements\\db\\ElementQuery') %}
                 {% if fieldValue|length %}
                     {% set items = [] %}
                     {% for item in fieldValue.all() %}
                         {% if item.title is defined and item.title is not empty %}
                             {% set items = items|merge([item.title]) %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set value = items|join(separator) %}
+                {% endif %}
+            {% elseif fieldValue is iterable %}
+                {% if fieldValue|length %}
+                    {% set items = [] %}
+                    {% for item in fieldValue %}
+                        {% if item is not empty %}
+                            {% set items = items|merge([item]) %}
                         {% endif %}
                     {% endfor %}
                     {% set value = items|join(separator) %}
