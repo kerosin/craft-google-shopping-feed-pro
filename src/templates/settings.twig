@@ -9,9 +9,42 @@
  */
 #}
 
+{% do view.registerAssetBundle('kerosin\\googleshoppingfeedpro\\assetbundles\\googleshoppingfeedpro\\GoogleShoppingFeedProAsset') %}
+
 {% import '_includes/forms' as forms %}
 
-{% do view.registerAssetBundle('kerosin\\googleshoppingfeedpro\\assetbundles\\googleshoppingfeedpro\\GoogleShoppingFeedProAsset') %}
+{% macro customValueField(name, options, settings, label, instructions) %}
+    {% set input %}
+        <div class="flex">
+            <div>
+                {{ forms.select({
+                    id: name ~ 'Field',
+                    name: name ~ 'Field',
+                    value: settings[name ~ 'Field'],
+                    options: options,
+                    toggle: true,
+                    targetPrefix: name ~ '-field'
+                }) }}
+            </div>
+            <div class="flex-grow">
+                <div id="{{ name }}-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings[name ~ 'Field']) ? ' class="hidden"' }}>
+                    {{ forms.text({
+                        id: name ~ 'CustomValue',
+                        class: 'ltr',
+                        name: name ~ 'CustomValue',
+                        value: settings[name ~ 'CustomValue']
+                    }) }}
+                </div>
+            </div>
+        </div>
+    {% endset %}
+
+    {{ forms.field({
+        label: label,
+        instructions: instructions,
+        errors: settings.getErrors(name ~ 'Field') ?: settings.getErrors(name ~ 'CustomValue')
+    }, input) }}
+{% endmacro %}
 
 {% set fieldOptions = settings.getFieldOptions() %}
 {% set isCommerceInstalled = craft.app.plugins.isPluginInstalled('commerce') %}
@@ -105,39 +138,16 @@
     errors: settings.getErrors('imageLinkField')
 }) }}
 
-{% set availabilityFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'availabilityField',
-                name: 'availabilityField',
-                value: settings.availabilityField,
-                options: [
-                    {label: (isCommerceInstalled ? 'Use Stock Field'|t('google-shopping-feed-pro') : ''), value: ''},
-                    {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
-                ]|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'availability-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="availability-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.availabilityField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'availabilityCustomValue',
-                    class: 'ltr',
-                    name: 'availabilityCustomValue',
-                    value: settings.availabilityCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Availability'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s availability. Required.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('availabilityField') ?: settings.getErrors('availabilityCustomValue')
-}, availabilityFieldInput) }}
+{{ _self.customValueField(
+    'availability',
+    [
+        {label: (isCommerceInstalled ? 'Use Stock Field'|t('google-shopping-feed-pro') : ''), value: ''},
+        {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
+    ]|merge(fieldOptions),
+    settings,
+    'Availability'|t('google-shopping-feed-pro'),
+    'The product\'s availability. Required.'|t('google-shopping-feed-pro')
+) }}
 
 {{ forms.selectField({
     label: 'Price'|t('google-shopping-feed-pro'),
@@ -149,39 +159,16 @@
     errors: settings.getErrors('priceField')
 }) }}
 
-{% set currencyFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'currencyField',
-                name: 'currencyField',
-                value: settings.currencyField,
-                options: [
-                    {label: (isCommerceInstalled ? 'Use Base Currency'|t('google-shopping-feed-pro') : ''), value: ''},
-                    {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
-                ]|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'currency-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="currency-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.currencyField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'currencyCustomValue',
-                    class: 'ltr',
-                    name: 'currencyCustomValue',
-                    value: settings.currencyCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Currency'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s price currency.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('currencyField') ?: settings.getErrors('currencyCustomValue')
-}, currencyFieldInput) }}
+{{ _self.customValueField(
+    'currency',
+    [
+        {label: (isCommerceInstalled ? 'Use Base Currency'|t('google-shopping-feed-pro') : ''), value: ''},
+        {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
+    ]|merge(fieldOptions),
+    settings,
+    'Currency'|t('google-shopping-feed-pro'),
+    'The product\'s price currency.'|t('google-shopping-feed-pro')
+) }}
 
 {{ forms.selectField({
     label: 'Sale Price'|t('google-shopping-feed-pro'),
@@ -235,36 +222,13 @@
 
 <h3>{{ 'Product Identifiers'|t('google-shopping-feed-pro') }}</h3>
 
-{% set brandFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'brandField',
-                name: 'brandField',
-                value: settings.brandField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'brand-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="brand-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.brandField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'brandCustomValue',
-                    class: 'ltr',
-                    name: 'brandCustomValue',
-                    value: settings.brandCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Brand'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s brand name. Required for all new products, except movies, books, and musical recording brands.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('brandField') ?: settings.getErrors('brandCustomValue')
-}, brandFieldInput) }}
+{{ _self.customValueField(
+    'brand',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Brand'|t('google-shopping-feed-pro'),
+    'The product\'s brand name. Required for all new products, except movies, books, and musical recording brands.'|t('google-shopping-feed-pro')
+) }}
 
 {{ forms.selectField({
     label: 'GTIN'|t('google-shopping-feed-pro'),
@@ -298,36 +262,13 @@
 
 <h3>{{ 'Product Category'|t('google-shopping-feed-pro') }}</h3>
 
-{% set googleProductCategoryFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'googleProductCategoryField',
-                name: 'googleProductCategoryField',
-                value: settings.googleProductCategoryField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'googleProductCategory-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="googleProductCategory-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.googleProductCategoryField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'googleProductCategoryCustomValue',
-                    class: 'ltr',
-                    name: 'googleProductCategoryCustomValue',
-                    value: settings.googleProductCategoryCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Google Product Category'|t('google-shopping-feed-pro'),
-    instructions: 'Google-defined product category for a product. Optional.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('googleProductCategoryField') ?: settings.getErrors('googleProductCategoryCustomValue')
-}, googleProductCategoryFieldInput) }}
+{{ _self.customValueField(
+    'googleProductCategory',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Google Product Category'|t('google-shopping-feed-pro'),
+    'Google-defined product category for a product. Optional.'|t('google-shopping-feed-pro')
+) }}
 
 {{ forms.selectField({
     label: 'Product Type'|t('google-shopping-feed-pro'),
@@ -393,35 +334,12 @@
     errors: settings.getErrors('unitPricingMeasureField')
 }) }}
 
-{% set unitPricingMeasureUnitFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'unitPricingMeasureUnitField',
-                name: 'unitPricingMeasureUnitField',
-                value: settings.unitPricingMeasureUnitField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'unitPricingMeasureUnit-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="unitPricingMeasureUnit-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.unitPricingMeasureUnitField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'unitPricingMeasureUnitCustomValue',
-                    class: 'ltr',
-                    name: 'unitPricingMeasureUnitCustomValue',
-                    value: settings.unitPricingMeasureUnitCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Unit Pricing Measure Unit'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('unitPricingMeasureUnitField') ?: settings.getErrors('unitPricingMeasureUnitCustomValue')
-}, unitPricingMeasureUnitFieldInput) }}
+{{ _self.customValueField(
+    'unitPricingMeasureUnit',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Unit Pricing Measure Unit'|t('google-shopping-feed-pro')
+) }}
 
 {{ forms.selectField({
     label: 'Unit Pricing Base Measure'|t('google-shopping-feed-pro'),
@@ -433,35 +351,12 @@
     errors: settings.getErrors('unitPricingBaseMeasureField')
 }) }}
 
-{% set unitPricingBaseMeasureUnitFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'unitPricingBaseMeasureUnitField',
-                name: 'unitPricingBaseMeasureUnitField',
-                value: settings.unitPricingBaseMeasureUnitField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'unitPricingBaseMeasureUnit-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="unitPricingBaseMeasureUnit-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.unitPricingBaseMeasureUnitField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'unitPricingBaseMeasureUnitCustomValue',
-                    class: 'ltr',
-                    name: 'unitPricingBaseMeasureUnitCustomValue',
-                    value: settings.unitPricingBaseMeasureUnitCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Unit Pricing Base Measure Unit'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('unitPricingBaseMeasureUnitField') ?: settings.getErrors('unitPricingBaseMeasureUnitCustomValue')
-}, unitPricingBaseMeasureUnitFieldInput) }}
+{{ _self.customValueField(
+    'unitPricingBaseMeasureUnit',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Unit Pricing Base Measure Unit'|t('google-shopping-feed-pro')
+) }}
 
 {{ forms.selectField({
     label: 'Installment'|t('google-shopping-feed-pro'),
@@ -495,67 +390,21 @@
 
 <h3>{{ 'Detailed Product Description'|t('google-shopping-feed-pro') }}</h3>
 
-{% set conditionFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'conditionField',
-                name: 'conditionField',
-                value: settings.conditionField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'condition-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="condition-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.conditionField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'conditionCustomValue',
-                    class: 'ltr',
-                    name: 'conditionCustomValue',
-                    value: settings.conditionCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
+{{ _self.customValueField(
+    'condition',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Condition'|t('google-shopping-feed-pro'),
+    'The condition of a product at time of sale. Required if a product is used or refurbished. Optional for new products.'|t('google-shopping-feed-pro')
+) }}
 
-{{ forms.field({
-    label: 'Condition'|t('google-shopping-feed-pro'),
-    instructions: 'The condition of a product at time of sale. Required if a product is used or refurbished. Optional for new products.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('conditionField') ?: settings.getErrors('conditionCustomValue')
-}, conditionFieldInput) }}
-
-{% set adultFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'adultField',
-                name: 'adultField',
-                value: settings.adultField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'adult-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="adult-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.adultField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'adultCustomValue',
-                    class: 'ltr',
-                    name: 'adultCustomValue',
-                    value: settings.adultCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Adult'|t('google-shopping-feed-pro'),
-    instructions: 'Indicate a product includes sexually suggestive content. Required if a product contains adult content.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('adultField') ?: settings.getErrors('adultCustomValue')
-}, adultFieldInput) }}
+{{ _self.customValueField(
+    'adult',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Adult'|t('google-shopping-feed-pro'),
+    'Indicate a product includes sexually suggestive content. Required if a product contains adult content.'|t('google-shopping-feed-pro')
+) }}
 
 {{ forms.selectField({
     label: 'Multipack'|t('google-shopping-feed-pro'),
@@ -577,346 +426,93 @@
     errors: settings.getErrors('isBundleField')
 }) }}
 
-{% set energyEfficiencyClassFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'energyEfficiencyClassField',
-                name: 'energyEfficiencyClassField',
-                value: settings.energyEfficiencyClassField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'energyEfficiencyClass-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="energyEfficiencyClass-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.energyEfficiencyClassField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'energyEfficiencyClassCustomValue',
-                    class: 'ltr',
-                    name: 'energyEfficiencyClassCustomValue',
-                    value: settings.energyEfficiencyClassCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
+{{ _self.customValueField(
+    'energyEfficiencyClass',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Energy Efficiency Class'|t('google-shopping-feed-pro'),
+    'The product\'s energy label. Optional (except when required by local law or regulations).'|t('google-shopping-feed-pro')
+) }}
 
-{{ forms.field({
-    label: 'Energy Efficiency Class'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s energy label. Optional (except when required by local law or regulations).'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('energyEfficiencyClassField') ?: settings.getErrors('energyEfficiencyClassCustomValue')
-}, energyEfficiencyClassFieldInput) }}
+{{ _self.customValueField(
+    'minEnergyEfficiencyClass',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Minimum energy efficiency class'|t('google-shopping-feed-pro'),
+    'The product\'s energy label. Optional (except when required by local laws or regulations).'|t('google-shopping-feed-pro')
+) }}
 
-{% set minEnergyEfficiencyClassFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'minEnergyEfficiencyClassField',
-                name: 'minEnergyEfficiencyClassField',
-                value: settings.minEnergyEfficiencyClassField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'minEnergyEfficiencyClass-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="minEnergyEfficiencyClass-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.minEnergyEfficiencyClassField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'minEnergyEfficiencyClassCustomValue',
-                    class: 'ltr',
-                    name: 'minEnergyEfficiencyClassCustomValue',
-                    value: settings.minEnergyEfficiencyClassCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
+{{ _self.customValueField(
+    'maxEnergyEfficiencyClass',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Maximum energy efficiency class'|t('google-shopping-feed-pro'),
+    'The product\'s energy label. Optional (except when required by local laws or regulations).'|t('google-shopping-feed-pro')
+) }}
 
-{{ forms.field({
-    label: 'Minimum energy efficiency class'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s energy label. Optional (except when required by local laws or regulations).'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('minEnergyEfficiencyClassField') ?: settings.getErrors('minEnergyEfficiencyClassCustomValue')
-}, minEnergyEfficiencyClassFieldInput) }}
+{{ _self.customValueField(
+    'ageGroup',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Age Group'|t('google-shopping-feed-pro'),
+    'The demographic for which a product is intended.'|t('google-shopping-feed-pro')
+) }}
 
-{% set maxEnergyEfficiencyClassFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'maxEnergyEfficiencyClassField',
-                name: 'maxEnergyEfficiencyClassField',
-                value: settings.maxEnergyEfficiencyClassField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'maxEnergyEfficiencyClass-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="maxEnergyEfficiencyClass-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.maxEnergyEfficiencyClassField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'maxEnergyEfficiencyClassCustomValue',
-                    class: 'ltr',
-                    name: 'maxEnergyEfficiencyClassCustomValue',
-                    value: settings.maxEnergyEfficiencyClassCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
+{{ _self.customValueField(
+    'color',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Color'|t('google-shopping-feed-pro'),
+    'The product\'s color(s).'|t('google-shopping-feed-pro')
+) }}
 
-{{ forms.field({
-    label: 'Maximum energy efficiency class'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s energy label. Optional (except when required by local laws or regulations).'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('maxEnergyEfficiencyClassField') ?: settings.getErrors('maxEnergyEfficiencyClassCustomValue')
-}, maxEnergyEfficiencyClassFieldInput) }}
+{{ _self.customValueField(
+    'gender',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Gender'|t('google-shopping-feed-pro'),
+    'The gender for which a product is intended.'|t('google-shopping-feed-pro')
+) }}
 
-{% set ageGroupFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'ageGroupField',
-                name: 'ageGroupField',
-                value: settings.ageGroupField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'ageGroup-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="ageGroup-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.ageGroupField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'ageGroupCustomValue',
-                    class: 'ltr',
-                    name: 'ageGroupCustomValue',
-                    value: settings.ageGroupCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
+{{ _self.customValueField(
+    'material',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Material'|t('google-shopping-feed-pro'),
+    'The product\'s fabric or material.'|t('google-shopping-feed-pro')
+) }}
 
-{{ forms.field({
-    label: 'Age Group'|t('google-shopping-feed-pro'),
-    instructions: 'The demographic for which a product is intended.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('ageGroupField') ?: settings.getErrors('ageGroupCustomValue')
-}, ageGroupFieldInput) }}
+{{ _self.customValueField(
+    'pattern',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Pattern'|t('google-shopping-feed-pro'),
+    'The product\'s pattern or graphic print.'|t('google-shopping-feed-pro')
+) }}
 
-{% set colorFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'colorField',
-                name: 'colorField',
-                value: settings.colorField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'color-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="color-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.colorField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'colorCustomValue',
-                    class: 'ltr',
-                    name: 'colorCustomValue',
-                    value: settings.colorCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
+{{ _self.customValueField(
+    'size',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Size'|t('google-shopping-feed-pro'),
+    'The product\'s size.'|t('google-shopping-feed-pro')
+) }}
 
-{{ forms.field({
-    label: 'Color'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s color(s).'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('colorField') ?: settings.getErrors('colorCustomValue')
-}, colorFieldInput) }}
+{{ _self.customValueField(
+    'sizeType',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Size Type'|t('google-shopping-feed-pro'),
+    'The apparel product\'s cut.'|t('google-shopping-feed-pro')
+) }}
 
-{% set genderFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'genderField',
-                name: 'genderField',
-                value: settings.genderField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'gender-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="gender-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.genderField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'genderCustomValue',
-                    class: 'ltr',
-                    name: 'genderCustomValue',
-                    value: settings.genderCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Gender'|t('google-shopping-feed-pro'),
-    instructions: 'The gender for which a product is intended.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('genderField') ?: settings.getErrors('genderCustomValue')
-}, genderFieldInput) }}
-
-{% set materialFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'materialField',
-                name: 'materialField',
-                value: settings.materialField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'material-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="material-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.materialField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'materialCustomValue',
-                    class: 'ltr',
-                    name: 'materialCustomValue',
-                    value: settings.materialCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Material'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s fabric or material.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('materialField') ?: settings.getErrors('materialCustomValue')
-}, materialFieldInput) }}
-
-{% set patternFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'patternField',
-                name: 'patternField',
-                value: settings.patternField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'pattern-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="pattern-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.patternField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'patternCustomValue',
-                    class: 'ltr',
-                    name: 'patternCustomValue',
-                    value: settings.patternCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Pattern'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s pattern or graphic print.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('patternField') ?: settings.getErrors('patternCustomValue')
-}, patternFieldInput) }}
-
-{% set sizeFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'sizeField',
-                name: 'sizeField',
-                value: settings.sizeField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'size-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="size-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.sizeField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'sizeCustomValue',
-                    class: 'ltr',
-                    name: 'sizeCustomValue',
-                    value: settings.sizeCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Size'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s size.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('sizeField') ?: settings.getErrors('sizeCustomValue')
-}, sizeFieldInput) }}
-
-{% set sizeTypeFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'sizeTypeField',
-                name: 'sizeTypeField',
-                value: settings.sizeTypeField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'sizeType-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="sizeType-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.sizeTypeField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'sizeTypeCustomValue',
-                    class: 'ltr',
-                    name: 'sizeTypeCustomValue',
-                    value: settings.sizeTypeCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Size Type'|t('google-shopping-feed-pro'),
-    instructions: 'The apparel product\'s cut.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('sizeTypeField') ?: settings.getErrors('sizeTypeCustomValue')
-}, sizeTypeFieldInput) }}
-
-{% set sizeSystemFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'sizeSystemField',
-                name: 'sizeSystemField',
-                value: settings.sizeSystemField,
-                options: customValueOptions|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'sizeSystem-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="sizeSystem-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.sizeSystemField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'sizeSystemCustomValue',
-                    class: 'ltr',
-                    name: 'sizeSystemCustomValue',
-                    value: settings.sizeSystemCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Size System'|t('google-shopping-feed-pro'),
-    instructions: 'The country of the size system used by a product.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('sizeSystemField') ?: settings.getErrors('sizeSystemCustomValue')
-}, sizeSystemFieldInput) }}
+{{ _self.customValueField(
+    'sizeSystem',
+    customValueOptions|merge(fieldOptions),
+    settings,
+    'Size System'|t('google-shopping-feed-pro'),
+    'The country of the size system used by a product.'|t('google-shopping-feed-pro')
+) }}
 
 {% set itemGroupIdFieldOptions = [{label: '', value: ''}] %}
 {% if isCommerceInstalled %}
@@ -948,39 +544,16 @@
     errors: settings.getErrors('productLengthField')
 }) }}
 
-{% set productLengthUnitFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'productLengthUnitField',
-                name: 'productLengthUnitField',
-                value: settings.productLengthUnitField,
-                options: [
-                    {label: (isCommerceInstalled ? 'Use Dimension Unit'|t('google-shopping-feed-pro') : ''), value: ''},
-                    {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
-                ]|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'productLengthUnit-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="productLengthUnit-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.productLengthUnitField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'productLengthUnitCustomValue',
-                    class: 'ltr',
-                    name: 'productLengthUnitCustomValue',
-                    value: settings.productLengthUnitCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Product Length Unit'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s length unit.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('productLengthUnitField') ?: settings.getErrors('productLengthUnitCustomValue')
-}, productLengthUnitFieldInput) }}
+{{ _self.customValueField(
+    'productLengthUnit',
+    [
+        {label: (isCommerceInstalled ? 'Use Dimension Unit'|t('google-shopping-feed-pro') : ''), value: ''},
+        {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
+    ]|merge(fieldOptions),
+    settings,
+    'Product Length Unit'|t('google-shopping-feed-pro'),
+    'The product\'s length unit.'|t('google-shopping-feed-pro')
+) }}
 
 {{ forms.selectField({
     label: 'Product Width'|t('google-shopping-feed-pro'),
@@ -992,39 +565,16 @@
     errors: settings.getErrors('productWidthField')
 }) }}
 
-{% set productWidthUnitFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'productWidthUnitField',
-                name: 'productWidthUnitField',
-                value: settings.productWidthUnitField,
-                options: [
-                    {label: (isCommerceInstalled ? 'Use Dimension Unit'|t('google-shopping-feed-pro') : ''), value: ''},
-                    {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
-                ]|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'productWidthUnit-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="productWidthUnit-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.productWidthUnitField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'productWidthUnitCustomValue',
-                    class: 'ltr',
-                    name: 'productWidthUnitCustomValue',
-                    value: settings.productWidthUnitCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Product Width Unit'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s width unit.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('productWidthUnitField') ?: settings.getErrors('productWidthUnitCustomValue')
-}, productWidthUnitFieldInput) }}
+{{ _self.customValueField(
+    'productWidthUnit',
+    [
+        {label: (isCommerceInstalled ? 'Use Dimension Unit'|t('google-shopping-feed-pro') : ''), value: ''},
+        {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
+    ]|merge(fieldOptions),
+    settings,
+    'Product Width Unit'|t('google-shopping-feed-pro'),
+    'The product\'s width unit.'|t('google-shopping-feed-pro')
+) }}
 
 {{ forms.selectField({
     label: 'Product Height'|t('google-shopping-feed-pro'),
@@ -1036,39 +586,16 @@
     errors: settings.getErrors('productHeightField')
 }) }}
 
-{% set productHeightUnitFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'productHeightUnitField',
-                name: 'productHeightUnitField',
-                value: settings.productHeightUnitField,
-                options: [
-                    {label: (isCommerceInstalled ? 'Use Dimension Unit'|t('google-shopping-feed-pro') : ''), value: ''},
-                    {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
-                ]|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'productHeightUnit-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="productHeightUnit-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.productHeightUnitField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'productHeightUnitCustomValue',
-                    class: 'ltr',
-                    name: 'productHeightUnitCustomValue',
-                    value: settings.productHeightUnitCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Product Height Unit'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s height unit.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('productHeightUnitField') ?: settings.getErrors('productHeightUnitCustomValue')
-}, productHeightUnitFieldInput) }}
+{{ _self.customValueField(
+    'productHeightUnit',
+    [
+        {label: (isCommerceInstalled ? 'Use Dimension Unit'|t('google-shopping-feed-pro') : ''), value: ''},
+        {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
+    ]|merge(fieldOptions),
+    settings,
+    'Product Height Unit'|t('google-shopping-feed-pro'),
+    'The product\'s height unit.'|t('google-shopping-feed-pro')
+) }}
 
 {{ forms.selectField({
     label: 'Product Weight'|t('google-shopping-feed-pro'),
@@ -1080,39 +607,16 @@
     errors: settings.getErrors('productWeightField')
 }) }}
 
-{% set productWeightUnitFieldInput %}
-    <div class="flex">
-        <div>
-            {{ forms.select({
-                id: 'productWeightUnitField',
-                name: 'productWeightUnitField',
-                value: settings.productWeightUnitField,
-                options: [
-                    {label: (isCommerceInstalled ? 'Use Weight Unit'|t('google-shopping-feed-pro') : ''), value: ''},
-                    {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
-                ]|merge(fieldOptions),
-                toggle: true,
-                targetPrefix: 'productWeightUnit-field'
-            }) }}
-        </div>
-        <div class="flex-grow">
-            <div id="productWeightUnit-field{{ constant('OPTION_CUSTOM_VALUE', settings) }}"{{ not craft.googleShoppingFeedPro.isCustomValue(settings.productWeightUnitField) ? ' class="hidden"' }}>
-                {{ forms.text({
-                    id: 'productWeightUnitCustomValue',
-                    class: 'ltr',
-                    name: 'productWeightUnitCustomValue',
-                    value: settings.productWeightUnitCustomValue
-                }) }}
-            </div>
-        </div>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: 'Product Weight Unit'|t('google-shopping-feed-pro'),
-    instructions: 'The product\'s weight unit.'|t('google-shopping-feed-pro'),
-    errors: settings.getErrors('productWeightUnitField') ?: settings.getErrors('productWeightUnitCustomValue')
-}, productWeightUnitFieldInput) }}
+{{ _self.customValueField(
+    'productWeightUnit',
+    [
+        {label: (isCommerceInstalled ? 'Use Weight Unit'|t('google-shopping-feed-pro') : ''), value: ''},
+        {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
+    ]|merge(fieldOptions),
+    settings,
+    'Product Weight Unit'|t('google-shopping-feed-pro'),
+    'The product\'s weight unit.'|t('google-shopping-feed-pro')
+) }}
 
 {{ forms.selectField({
     label: 'Product Detail'|t('google-shopping-feed-pro'),
