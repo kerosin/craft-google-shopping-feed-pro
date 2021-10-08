@@ -2,7 +2,7 @@
     "name": "kerosin/craft-google-shopping-feed-pro",
     "description": "Google Shopping Feed for Craft CMS.",
     "type": "craft-plugin",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "keywords": [
         "craft",
         "cms",

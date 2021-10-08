@@ -1,5 +1,9 @@
 # Google Shopping Feed Pro Changelog
 
+## 1.2.3 - 2021-10-08
+### Added
+- Added support for some standard fields
+
 ## 1.2.2 - 2021-10-06
 ### Added
 - Added usability improvements
