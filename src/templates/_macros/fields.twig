@@ -9,6 +9,15 @@
  */
 #}
 
+{#
+/**
+ * @param string tag
+ * @param \craft\base\Element element
+ * @param string field
+ * @param string|null customValue
+ * @param string separator
+ */
+#}
 {% macro baseField(tag, element, field, customValue, separator = ',') %}
     {% if field is not empty %}
         {% if craft.googleShoppingFeedPro.isCustomValue(field) %}
@@ -77,6 +86,18 @@
     {% endif %}
 {% endmacro %}
 
+{#
+/**
+ * @param string tag
+ * @param \craft\base\Element element
+ * @param string field
+ * @param string unitField
+ * @param string|null unitCustomValue
+ * @param string|null unitDefaultValue
+ * @param bool format
+ * @param bool spaceUnit
+ */
+#}
 {% macro measureField(tag, element, field, unitField, unitCustomValue, unitDefaultValue, format = false, spaceUnit = true) %}
     {% if field is not empty %}
         {% set value = craft.googleShoppingFeedPro.elementFieldValue(element, field)|striptags|trim %}
@@ -96,6 +117,14 @@
     {% endif %}
 {% endmacro %}
 
+{#
+/**
+ * @param string tag
+ * @param \craft\base\Element element
+ * @param string fieldFrom
+ * @param string fieldTo
+ */
+#}
 {% macro dateRangeField(tag, element, fieldFrom, fieldTo) %}
     {% if fieldFrom is not empty and fieldTo is not empty %}
         {% set valueFrom = craft.googleShoppingFeedPro.elementFieldValue(element, fieldFrom) %}
@@ -116,6 +145,14 @@
     {% endif %}
 {% endmacro %}
 
+{#
+/**
+ * @param string tag
+ * @param \craft\base\Element element
+ * @param string field
+ * @param bool multiple
+ */
+#}
 {% macro assetField(tag, element, field, multiple = false) %}
     {% if field is not empty %}
         {% set value = craft.googleShoppingFeedPro.elementFieldValue(element, field) %}
