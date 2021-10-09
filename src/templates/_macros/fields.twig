@@ -67,11 +67,23 @@
                 {% if fieldValue|length %}
                     {% set items = [] %}
                     {% for item in fieldValue %}
-                        {% if item is not empty %}
+                        {% if
+                            item is instance of('craft\\fields\\data\\OptionData') and
+                            item.label is defined and
+                            item.label is not empty
+                        %}
+                            {% set items = items|merge([item.label]) %}
+                        {% elseif item is not empty %}
                             {% set items = items|merge([item]) %}
                         {% endif %}
                     {% endfor %}
                     {% set value = items|join(separator) %}
+                {% endif %}
+            {% elseif fieldValue is instance of('craft\\fields\\data\\OptionData') %}
+                {% if fieldValue.label is defined and fieldValue.label is not empty %}
+                    {% set value = fieldValue.label %}
+                {% else %}
+                    {% set value = fieldValue %}
                 {% endif %}
             {% else %}
                 {% set value = fieldValue %}
