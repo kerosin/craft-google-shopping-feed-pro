@@ -1,5 +1,9 @@
 # Google Shopping Feed Pro Changelog
 
+## 1.2.4 - 2021-10-09
+### Fixed
+- Fixed output for Dropdown and Multi-select fields
+
 ## 1.2.3 - 2021-10-08
 ### Added
 - Added support for some standard fields
