@@ -9,12 +9,8 @@
 namespace kerosin\googleshoppingfeedpro\variables;
 
 use kerosin\googleshoppingfeedpro\GoogleShoppingFeedPro;
-use kerosin\googleshoppingfeedpro\services\GoogleShoppingFeedProService;
 
-use Craft;
 use craft\base\Element;
-use craft\commerce\elements\Product;
-use craft\commerce\elements\Variant;
 
 use DateTime;
 use Exception;
@@ -30,6 +26,16 @@ class GoogleShoppingFeedProVariable
     // =========================================================================
 
     /**
+     * @param Element[] $elements
+     * @return void
+     * @throws Exception
+     */
+    public function generateFeed(array $elements): void
+    {
+        GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService->generateFeed($elements);
+    }
+
+    /**
      * @param Element $element
      * @param string $field
      * @return mixed
@@ -37,29 +43,9 @@ class GoogleShoppingFeedProVariable
      */
     public function elementFieldValue(Element $element, string $field)
     {
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
-        $object = $element;
-
-        if (Craft::$app->getPlugins()->isPluginInstalled('commerce')) {
-            if ($element instanceof Product) {
-                if (isset($element->getDefaultVariant()->$field)) {
-                    $object = $element->getDefaultVariant();
-                }
-            } elseif ($element instanceof Variant) {
-                $product = $element->getProduct();
-
-                if (
-                    !isset($element->$field) &&
-                    $settings->useProductData &&
-                    $product != null &&
-                    isset($product->$field)
-                ) {
-                    $object = $element->getProduct();
-                }
-            }
-        }
-
-        return isset($object->$field) ? $object->$field : null;
+        return GoogleShoppingFeedPro::$plugin
+            ->googleShoppingFeedProService
+            ->getElementFieldValue($element, $field);
     }
 
     /**
@@ -69,37 +55,9 @@ class GoogleShoppingFeedProVariable
      */
     public function elementSalesMinStartDate(Element $element): ?DateTime
     {
-        $result = null;
-
-        if (
-            !Craft::$app->getPlugins()->isPluginInstalled('commerce') ||
-            !($element instanceof Product || $element instanceof Variant)
-        ) {
-            return $result;
-        }
-
-        if ($element instanceof Product) {
-            $sales = $element->getDefaultVariant()->getSales();
-        } else {
-            $sales = $element->getSales();
-        }
-
-        if ($sales == null || count($sales) == 0) {
-            return $result;
-        }
-
-        foreach ($sales as $sale) {
-            if ($sale->dateFrom == null) {
-                $result = null;
-                break;
-            }
-
-            if ($result == null || $sale->dateFrom < $result) {
-                $result = $sale->dateFrom;
-            }
-        }
-
-        return $result;
+        return GoogleShoppingFeedPro::$plugin
+            ->googleShoppingFeedProService
+            ->getElementSalesMinStartDate($element);
     }
 
     /**
@@ -109,37 +67,9 @@ class GoogleShoppingFeedProVariable
      */
     public function elementSalesMaxEndDate(Element $element): ?DateTime
     {
-        $result = null;
-
-        if (
-            !Craft::$app->getPlugins()->isPluginInstalled('commerce') ||
-            !($element instanceof Product || $element instanceof Variant)
-        ) {
-            return $result;
-        }
-
-        if ($element instanceof Product) {
-            $sales = $element->getDefaultVariant()->getSales();
-        } else {
-            $sales = $element->getSales();
-        }
-
-        if ($sales == null || count($sales) == 0) {
-            return $result;
-        }
-
-        foreach ($sales as $sale) {
-            if ($sale->dateTo == null) {
-                $result = null;
-                break;
-            }
-
-            if ($result == null || $sale->dateTo > $result) {
-                $result = $sale->dateTo;
-            }
-        }
-
-        return $result;
+        return GoogleShoppingFeedPro::$plugin
+            ->googleShoppingFeedProService
+            ->getElementSalesMaxEndDate($element);
     }
 
     /**
@@ -148,9 +78,7 @@ class GoogleShoppingFeedProVariable
      */
     public function isCustomValue(?string $value): bool
     {
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
-
-        return $value == $settings::OPTION_CUSTOM_VALUE;
+        return GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService->isCustomValue($value);
     }
 
     /**
@@ -160,9 +88,7 @@ class GoogleShoppingFeedProVariable
      */
     public function isUseProductId(?string $value): bool
     {
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
-
-        return $value == $settings::OPTION_USE_PRODUCT_ID;
+        return GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService->isUseProductId($value);
     }
 
     /**
@@ -172,9 +98,7 @@ class GoogleShoppingFeedProVariable
      */
     public function isUseSaleStartDate(?string $value): bool
     {
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
-
-        return $value == $settings::OPTION_USE_SALE_START_DATE;
+        return GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService->isUseSaleStartDate($value);
     }
 
     /**
@@ -184,24 +108,6 @@ class GoogleShoppingFeedProVariable
      */
     public function isUseSaleEndDate(?string $value): bool
     {
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
-
-        return $value == $settings::OPTION_USE_SALE_END_DATE;
-    }
-
-    /**
-     * @param Element[] $elements
-     * @return void
-     * @throws Exception
-     */
-    public function generateFeed(array $elements): void
-    {
-        $response = Craft::$app->getResponse();
-        $response->getHeaders()->set('Content-Type', 'application/xml; charset=UTF-8');
-
-        /** @var GoogleShoppingFeedProService $googleShoppingFeedProService */
-        $googleShoppingFeedProService = GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService;
-
-        echo $googleShoppingFeedProService->getFeedXml($elements);
+        return GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService->isUseSaleEndDate($value);
     }
 }
