@@ -697,12 +697,12 @@ class Settings extends Model
     public function rules()
     {
         $fieldOptions = array_merge(
-            array_keys([
-                self::OPTION_CUSTOM_VALUE => Craft::t('google-shopping-feed-pro', 'Custom Value'),
-                self::OPTION_USE_PRODUCT_ID => Craft::t('google-shopping-feed-pro', 'Use Product ID'),
-                self::OPTION_USE_SALE_START_DATE => Craft::t('google-shopping-feed-pro', 'Use Sale Start Date'),
-                self::OPTION_USE_SALE_END_DATE => Craft::t('google-shopping-feed-pro', 'Use Sale End Date'),
-            ]),
+            [
+                self::OPTION_CUSTOM_VALUE,
+                self::OPTION_USE_PRODUCT_ID,
+                self::OPTION_USE_SALE_START_DATE,
+                self::OPTION_USE_SALE_END_DATE,
+            ],
             array_keys($this->getStandardFields()),
             array_keys($this->getCustomFields())
         );
