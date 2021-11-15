@@ -15,14 +15,16 @@
 
 {#
 /**
- * @param string name
- * @param array options
- * @param object settings
- * @param string label
- * @param string|null instructions
+ * @param object config
  */
 #}
-{% macro customValueField(name, options, settings, label, instructions) %}
+{% macro customValueField(config) %}
+    {% set label = config.label ?? null %}
+    {% set instructions = config.instructions ?? null %}
+    {% set name = config.name ?? null %}
+    {% set options = config.options ?? [] %}
+    {% set settings = config.settings ?? {} %}
+
     {% set input %}
         <div class="flex">
             <div>
@@ -147,16 +149,16 @@
     errors: settings.getErrors('imageLinkField')
 }) }}
 
-{{ _self.customValueField(
-    'availability',
-    [
+{{ _self.customValueField({
+    label: 'Availability'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s availability. Required.'|t('google-shopping-feed-pro'),
+    name: 'availability',
+    options: [
         {label: (isCommerceInstalled ? 'Use Stock Field'|t('google-shopping-feed-pro') : ''), value: ''},
         {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
     ]|merge(fieldOptions),
-    settings,
-    'Availability'|t('google-shopping-feed-pro'),
-    'The product\'s availability. Required.'|t('google-shopping-feed-pro')
-) }}
+    settings: settings
+}) }}
 
 {{ forms.selectField({
     label: 'Price'|t('google-shopping-feed-pro'),
@@ -168,16 +170,16 @@
     errors: settings.getErrors('priceField')
 }) }}
 
-{{ _self.customValueField(
-    'currency',
-    [
+{{ _self.customValueField({
+    label: 'Currency'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s price currency.'|t('google-shopping-feed-pro'),
+    name: 'currency',
+    options: [
         {label: (isCommerceInstalled ? 'Use Base Currency'|t('google-shopping-feed-pro') : ''), value: ''},
         {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
     ]|merge(fieldOptions),
-    settings,
-    'Currency'|t('google-shopping-feed-pro'),
-    'The product\'s price currency.'|t('google-shopping-feed-pro')
-) }}
+    settings: settings
+}) }}
 
 {{ forms.selectField({
     label: 'Sale Price'|t('google-shopping-feed-pro'),
@@ -231,13 +233,13 @@
 
 <h3>{{ 'Product Identifiers'|t('google-shopping-feed-pro') }}</h3>
 
-{{ _self.customValueField(
-    'brand',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Brand'|t('google-shopping-feed-pro'),
-    'The product\'s brand name. Required for all new products, except movies, books, and musical recording brands.'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Brand'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s brand name. Required for all new products, except movies, books, and musical recording brands.'|t('google-shopping-feed-pro'),
+    name: 'brand',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
 {{ forms.selectField({
     label: 'GTIN'|t('google-shopping-feed-pro'),
@@ -271,13 +273,13 @@
 
 <h3>{{ 'Product Category'|t('google-shopping-feed-pro') }}</h3>
 
-{{ _self.customValueField(
-    'googleProductCategory',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Google Product Category'|t('google-shopping-feed-pro'),
-    'Google-defined product category for a product. Optional.'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Google Product Category'|t('google-shopping-feed-pro'),
+    instructions: 'Google-defined product category for a product. Optional.'|t('google-shopping-feed-pro'),
+    name: 'googleProductCategory',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
 {{ forms.selectField({
     label: 'Product Type'|t('google-shopping-feed-pro'),
@@ -343,12 +345,12 @@
     errors: settings.getErrors('unitPricingMeasureField')
 }) }}
 
-{{ _self.customValueField(
-    'unitPricingMeasureUnit',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Unit Pricing Measure Unit'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Unit Pricing Measure Unit'|t('google-shopping-feed-pro'),
+    name: 'unitPricingMeasureUnit',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
 {{ forms.selectField({
     label: 'Unit Pricing Base Measure'|t('google-shopping-feed-pro'),
@@ -360,12 +362,12 @@
     errors: settings.getErrors('unitPricingBaseMeasureField')
 }) }}
 
-{{ _self.customValueField(
-    'unitPricingBaseMeasureUnit',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Unit Pricing Base Measure Unit'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Unit Pricing Base Measure Unit'|t('google-shopping-feed-pro'),
+    name: 'unitPricingBaseMeasureUnit',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
 {{ forms.selectField({
     label: 'Installment'|t('google-shopping-feed-pro'),
@@ -399,21 +401,21 @@
 
 <h3>{{ 'Detailed Product Description'|t('google-shopping-feed-pro') }}</h3>
 
-{{ _self.customValueField(
-    'condition',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Condition'|t('google-shopping-feed-pro'),
-    'The condition of a product at time of sale. Required if a product is used or refurbished. Optional for new products.'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Condition'|t('google-shopping-feed-pro'),
+    instructions: 'The condition of a product at time of sale. Required if a product is used or refurbished. Optional for new products.'|t('google-shopping-feed-pro'),
+    name: 'condition',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
-{{ _self.customValueField(
-    'adult',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Adult'|t('google-shopping-feed-pro'),
-    'Indicate a product includes sexually suggestive content. Required if a product contains adult content.'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Adult'|t('google-shopping-feed-pro'),
+    instructions: 'Indicate a product includes sexually suggestive content. Required if a product contains adult content.'|t('google-shopping-feed-pro'),
+    name: 'adult',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
 {{ forms.selectField({
     label: 'Multipack'|t('google-shopping-feed-pro'),
@@ -435,93 +437,93 @@
     errors: settings.getErrors('isBundleField')
 }) }}
 
-{{ _self.customValueField(
-    'energyEfficiencyClass',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Energy Efficiency Class'|t('google-shopping-feed-pro'),
-    'The product\'s energy label. Optional (except when required by local law or regulations).'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Energy Efficiency Class'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s energy label. Optional (except when required by local law or regulations).'|t('google-shopping-feed-pro'),
+    name: 'energyEfficiencyClass',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
-{{ _self.customValueField(
-    'minEnergyEfficiencyClass',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Minimum energy efficiency class'|t('google-shopping-feed-pro'),
-    'The product\'s energy label. Optional (except when required by local laws or regulations).'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Minimum energy efficiency class'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s energy label. Optional (except when required by local laws or regulations).'|t('google-shopping-feed-pro'),
+    name: 'minEnergyEfficiencyClass',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
-{{ _self.customValueField(
-    'maxEnergyEfficiencyClass',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Maximum energy efficiency class'|t('google-shopping-feed-pro'),
-    'The product\'s energy label. Optional (except when required by local laws or regulations).'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Maximum energy efficiency class'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s energy label. Optional (except when required by local laws or regulations).'|t('google-shopping-feed-pro'),
+    name: 'maxEnergyEfficiencyClass',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
-{{ _self.customValueField(
-    'ageGroup',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Age Group'|t('google-shopping-feed-pro'),
-    'The demographic for which a product is intended.'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Age Group'|t('google-shopping-feed-pro'),
+    instructions: 'The demographic for which a product is intended.'|t('google-shopping-feed-pro'),
+    name: 'ageGroup',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
-{{ _self.customValueField(
-    'color',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Color'|t('google-shopping-feed-pro'),
-    'The product\'s color(s).'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Color'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s color(s).'|t('google-shopping-feed-pro'),
+    name: 'color',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
-{{ _self.customValueField(
-    'gender',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Gender'|t('google-shopping-feed-pro'),
-    'The gender for which a product is intended.'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Gender'|t('google-shopping-feed-pro'),
+    instructions: 'The gender for which a product is intended.'|t('google-shopping-feed-pro'),
+    name: 'gender',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
-{{ _self.customValueField(
-    'material',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Material'|t('google-shopping-feed-pro'),
-    'The product\'s fabric or material.'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Material'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s fabric or material.'|t('google-shopping-feed-pro'),
+    name: 'material',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
-{{ _self.customValueField(
-    'pattern',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Pattern'|t('google-shopping-feed-pro'),
-    'The product\'s pattern or graphic print.'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Pattern'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s pattern or graphic print.'|t('google-shopping-feed-pro'),
+    name: 'pattern',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
-{{ _self.customValueField(
-    'size',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Size'|t('google-shopping-feed-pro'),
-    'The product\'s size.'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Size'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s size.'|t('google-shopping-feed-pro'),
+    name: 'size',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
-{{ _self.customValueField(
-    'sizeType',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Size Type'|t('google-shopping-feed-pro'),
-    'The apparel product\'s cut.'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Size Type'|t('google-shopping-feed-pro'),
+    instructions: 'The apparel product\'s cut.'|t('google-shopping-feed-pro'),
+    name: 'sizeType',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
-{{ _self.customValueField(
-    'sizeSystem',
-    customValueOptions|merge(fieldOptions),
-    settings,
-    'Size System'|t('google-shopping-feed-pro'),
-    'The country of the size system used by a product.'|t('google-shopping-feed-pro')
-) }}
+{{ _self.customValueField({
+    label: 'Size System'|t('google-shopping-feed-pro'),
+    instructions: 'The country of the size system used by a product.'|t('google-shopping-feed-pro'),
+    name: 'sizeSystem',
+    options: customValueOptions|merge(fieldOptions),
+    settings: settings
+}) }}
 
 {% set itemGroupIdFieldOptions = [{label: '', value: ''}] %}
 {% if isCommerceInstalled %}
@@ -553,16 +555,16 @@
     errors: settings.getErrors('productLengthField')
 }) }}
 
-{{ _self.customValueField(
-    'productLengthUnit',
-    [
+{{ _self.customValueField({
+    label: 'Product Length Unit'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s length unit.'|t('google-shopping-feed-pro'),
+    name: 'productLengthUnit',
+    options: [
         {label: (isCommerceInstalled ? 'Use Dimension Unit'|t('google-shopping-feed-pro') : ''), value: ''},
         {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
     ]|merge(fieldOptions),
-    settings,
-    'Product Length Unit'|t('google-shopping-feed-pro'),
-    'The product\'s length unit.'|t('google-shopping-feed-pro')
-) }}
+    settings: settings
+}) }}
 
 {{ forms.selectField({
     label: 'Product Width'|t('google-shopping-feed-pro'),
@@ -574,16 +576,16 @@
     errors: settings.getErrors('productWidthField')
 }) }}
 
-{{ _self.customValueField(
-    'productWidthUnit',
-    [
+{{ _self.customValueField({
+    label: 'Product Width Unit'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s width unit.'|t('google-shopping-feed-pro'),
+    name: 'productWidthUnit',
+    options: [
         {label: (isCommerceInstalled ? 'Use Dimension Unit'|t('google-shopping-feed-pro') : ''), value: ''},
         {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
     ]|merge(fieldOptions),
-    settings,
-    'Product Width Unit'|t('google-shopping-feed-pro'),
-    'The product\'s width unit.'|t('google-shopping-feed-pro')
-) }}
+    settings: settings
+}) }}
 
 {{ forms.selectField({
     label: 'Product Height'|t('google-shopping-feed-pro'),
@@ -595,16 +597,16 @@
     errors: settings.getErrors('productHeightField')
 }) }}
 
-{{ _self.customValueField(
-    'productHeightUnit',
-    [
+{{ _self.customValueField({
+    label: 'Product Height Unit'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s height unit.'|t('google-shopping-feed-pro'),
+    name: 'productHeightUnit',
+    options: [
         {label: (isCommerceInstalled ? 'Use Dimension Unit'|t('google-shopping-feed-pro') : ''), value: ''},
         {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
     ]|merge(fieldOptions),
-    settings,
-    'Product Height Unit'|t('google-shopping-feed-pro'),
-    'The product\'s height unit.'|t('google-shopping-feed-pro')
-) }}
+    settings: settings
+}) }}
 
 {{ forms.selectField({
     label: 'Product Weight'|t('google-shopping-feed-pro'),
@@ -616,16 +618,16 @@
     errors: settings.getErrors('productWeightField')
 }) }}
 
-{{ _self.customValueField(
-    'productWeightUnit',
-    [
+{{ _self.customValueField({
+    label: 'Product Weight Unit'|t('google-shopping-feed-pro'),
+    instructions: 'The product\'s weight unit.'|t('google-shopping-feed-pro'),
+    name: 'productWeightUnit',
+    options: [
         {label: (isCommerceInstalled ? 'Use Weight Unit'|t('google-shopping-feed-pro') : ''), value: ''},
         {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
     ]|merge(fieldOptions),
-    settings,
-    'Product Weight Unit'|t('google-shopping-feed-pro'),
-    'The product\'s weight unit.'|t('google-shopping-feed-pro')
-) }}
+    settings: settings
+}) }}
 
 {{ forms.selectField({
     label: 'Product Detail'|t('google-shopping-feed-pro'),
