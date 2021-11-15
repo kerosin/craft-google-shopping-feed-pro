@@ -15,7 +15,13 @@ use craft\base\Component;
 use craft\base\Element;
 use craft\commerce\elements\Product;
 use craft\commerce\elements\Variant;
+use craft\commerce\Plugin as CommercePlugin;
+use craft\elements\db\AssetQuery;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\UserQuery;
 use craft\elements\Entry;
+use craft\fields\data\OptionData;
+use craft\helpers\ArrayHelper;
 use craft\web\View;
 
 use DateTime;
@@ -134,36 +140,129 @@ class GoogleShoppingFeedProService extends Component
 
     /**
      * @param Element $element
-     * @param string $field
+     * @param string|null $field
+     * @param mixed $customValue
      * @return mixed
      * @throws Exception
      * @since 1.3.0
      */
-    public function getElementFieldValue(Element $element, string $field)
+    public function getElementFieldValue(Element $element, ?string $field, $customValue = null)
     {
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
+        $result = null;
+
+        if ($field == null) {
+            return $result;
+        }
+
+        if ($this->isCustomValue($field)) {
+            return $customValue;
+        }
+
         $object = $element;
 
         if (Craft::$app->getPlugins()->isPluginInstalled('commerce')) {
             if ($element instanceof Product) {
-                if (isset($element->getDefaultVariant()->$field)) {
+                if (isset($element->getDefaultVariant()->{$field})) {
                     $object = $element->getDefaultVariant();
                 }
             } elseif ($element instanceof Variant) {
+                $settings = GoogleShoppingFeedPro::$plugin->getSettings();
                 $product = $element->getProduct();
 
                 if (
-                    !isset($element->$field) &&
+                    !isset($element->{$field}) &&
                     $settings->useProductData &&
                     $product != null &&
-                    isset($product->$field)
+                    isset($product->{$field})
                 ) {
                     $object = $element->getProduct();
                 }
             }
         }
 
-        return isset($object->$field) ? $object->$field : null;
+        if (!isset($object->{$field})) {
+            return $result;
+        }
+
+        $value = $object->{$field};
+
+        if ($value instanceof DateTime) {
+            $result = $value->format(DateTime::ATOM);
+        } elseif ($value instanceof AssetQuery) {
+            $items = $value->all();
+
+            if (count($items)) {
+                $values = [];
+
+                foreach ($items as $item) {
+                    if ($item->getUrl() != null) {
+                        $values[] = $item->getUrl();
+                    }
+                }
+
+                if (count($values)) {
+                    $result = $values;
+                }
+            }
+        } elseif ($value instanceof UserQuery) {
+            $items = $value->all();
+
+            if (count($items)) {
+                $values = [];
+
+                foreach ($items as $item) {
+                    if ($item->username != null) {
+                        $values[] = $item->username;
+                    }
+                }
+
+                if (count($values)) {
+                    $result = $values;
+                }
+            }
+        } elseif ($value instanceof ElementQuery) {
+            $items = $value->all();
+
+            if (count($items)) {
+                $values = [];
+
+                foreach ($items as $item) {
+                    if (isset($item->title) && $item->title != '') {
+                        $values[] = $item->title;
+                    }
+                }
+
+                if (count($values)) {
+                    $result = $values;
+                }
+            }
+        } elseif (ArrayHelper::isTraversable($value)) {
+            if (count($value)) {
+                $values = [];
+
+                foreach ($value as $item) {
+                    if ($item instanceof OptionData && isset($item->label) && $item->label != '') {
+                        $values[] = $item->label;
+                    } elseif ($item != null) {
+                        $values[] = (string)$item;
+                    }
+                }
+
+                if (count($values)) {
+                    $result = $values;
+                }
+            }
+        } elseif ($value instanceof OptionData) {
+            if (isset($value->label) && $value->label != '') {
+                $result = $value->label;
+            } else {
+                $result = (string)$value;
+            }
+        } else {
+            $result = $value;
+        }
+
+        return $result;
     }
 
     /**
@@ -175,10 +274,7 @@ class GoogleShoppingFeedProService extends Component
     {
         $result = null;
 
-        if (
-            !Craft::$app->getPlugins()->isPluginInstalled('commerce') ||
-            !($element instanceof Product || $element instanceof Variant)
-        ) {
+        if (!($element instanceof Product || $element instanceof Variant)) {
             return $result;
         }
 
@@ -215,10 +311,7 @@ class GoogleShoppingFeedProService extends Component
     {
         $result = null;
 
-        if (
-            !Craft::$app->getPlugins()->isPluginInstalled('commerce') ||
-            !($element instanceof Product || $element instanceof Variant)
-        ) {
+        if (!($element instanceof Product || $element instanceof Variant)) {
             return $result;
         }
 
@@ -247,7 +340,183 @@ class GoogleShoppingFeedProService extends Component
     }
 
     /**
-     * @param string $value
+     * @param Element $element
+     * @return string|null
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function getElementUrl(Element $element): ?string
+    {
+        $result = $element->getUrl();
+        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
+
+        if (
+            $element instanceof Variant &&
+            $settings->useProductUrl &&
+            $element->getProduct() != null
+        ) {
+            $result = $element->getProduct()->getUrl();
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param Element $element
+     * @return mixed
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function getElementAvailabilityFieldValue(Element $element)
+    {
+        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
+        $result = $settings::AVAILABILITY_IN_STOCK;
+
+        if ($this->isUseStockField($settings->availabilityField)) {
+            if ($element instanceof Product) {
+                $result = $element->getDefaultVariant()->hasStock()
+                    ? $settings::AVAILABILITY_IN_STOCK
+                    : $settings::AVAILABILITY_OUT_OF_STOCK;
+            } elseif ($element instanceof Variant) {
+                $result = $element->hasStock()
+                    ? $settings::AVAILABILITY_IN_STOCK
+                    : $settings::AVAILABILITY_OUT_OF_STOCK;
+            }
+        } elseif ($settings->availabilityField != null) {
+            $result = $this->getElementFieldValue(
+                $element,
+                $settings->availabilityField,
+                $settings->availabilityCustomValue
+            ) ?: $settings::AVAILABILITY_IN_STOCK;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param Element $element
+     * @return mixed
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function getElementItemGroupIdFieldValue(Element $element)
+    {
+        $result = null;
+        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
+
+        if ($this->isUseProductId($settings->itemGroupIdField)) {
+            if ($element instanceof Variant && $element->getProduct() != null) {
+                $result = $element->getProduct()->getId();
+            }
+        } else {
+            $result = $this->getElementFieldValue($element, $settings->itemGroupIdField);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param Element $element
+     * @param string|null $field
+     * @param mixed $customValue
+     * @return string|null
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function getElementCurrencyIso(Element $element, ?string $field, $customValue = null): ?string
+    {
+        if ($this->isUseBaseCurrency($field)) {
+            $result = CommercePlugin::getInstance()->getPaymentCurrencies()->getPrimaryPaymentCurrencyIso();
+        } else {
+            $value = $this->getElementFieldValue($element, $field, $customValue);
+            $result = is_array($value) ? current($value) : $value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param Element $element
+     * @param string|null $field
+     * @param mixed $customValue
+     * @return string|null
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function getElementDimensionUnit(Element $element, ?string $field, $customValue = null): ?string
+    {
+        if ($this->isUseDimensionUnit($field)) {
+            $result = CommercePlugin::getInstance()->getSettings()->dimensionUnits;
+        } else {
+            $value = $this->getElementFieldValue($element, $field, $customValue);
+            $result = is_array($value) ? current($value) : $value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param Element $element
+     * @param string|null $field
+     * @param mixed $customValue
+     * @return string|null
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function getElementWeightUnit(Element $element, ?string $field, $customValue = null): ?string
+    {
+        if ($this->isUseWeightUnit($field)) {
+            $result = CommercePlugin::getInstance()->getSettings()->weightUnits;
+        } else {
+            $value = $this->getElementFieldValue($element, $field, $customValue);
+            $result = is_array($value) ? current($value) : $value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param Element $element
+     * @param string|null $field
+     * @return string|null
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function getElementSaleStartDate(Element $element, ?string $field): ?string
+    {
+        if ($this->isUseSaleStartDate($field)) {
+            $value = $this->getElementSalesMinStartDate($element);
+            $result = $value instanceof DateTime ? $value->format(DateTime::ATOM) : $value;
+        } else {
+            $value = $this->getElementFieldValue($element, $field);
+            $result = is_array($value) ? current($value) : $value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param Element $element
+     * @param string|null $field
+     * @return string|null
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function getElementSaleEndDate(Element $element, ?string $field): ?string
+    {
+        if ($this->isUseSaleEndDate($field)) {
+            $value = $this->getElementSalesMaxEndDate($element);
+            $result = $value instanceof DateTime ? $value->format(DateTime::ATOM) : $value;
+        } else {
+            $value = $this->getElementFieldValue($element, $field);
+            $result = is_array($value) ? current($value) : $value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string|null $value
      * @return bool
      * @since 1.3.0
      */
@@ -259,7 +528,7 @@ class GoogleShoppingFeedProService extends Component
     }
 
     /**
-     * @param string $value
+     * @param string|null $value
      * @return bool
      * @since 1.3.0
      */
@@ -271,7 +540,7 @@ class GoogleShoppingFeedProService extends Component
     }
 
     /**
-     * @param string $value
+     * @param string|null $value
      * @return bool
      * @since 1.3.0
      */
@@ -283,7 +552,7 @@ class GoogleShoppingFeedProService extends Component
     }
 
     /**
-     * @param string $value
+     * @param string|null $value
      * @return bool
      * @since 1.3.0
      */
@@ -292,5 +561,45 @@ class GoogleShoppingFeedProService extends Component
         $settings = GoogleShoppingFeedPro::$plugin->getSettings();
 
         return $value == $settings::OPTION_USE_SALE_END_DATE;
+    }
+
+    /**
+     * @param string|null $value
+     * @return bool
+     * @since 1.3.0
+     */
+    public function isUseStockField(?string $value): bool
+    {
+        return $value == null && Craft::$app->getPlugins()->isPluginInstalled('commerce');
+    }
+
+    /**
+     * @param string|null $value
+     * @return bool
+     * @since 1.3.0
+     */
+    public function isUseBaseCurrency(?string $value): bool
+    {
+        return $value == null && Craft::$app->getPlugins()->isPluginInstalled('commerce');
+    }
+
+    /**
+     * @param string|null $value
+     * @return bool
+     * @since 1.3.0
+     */
+    public function isUseDimensionUnit(?string $value): bool
+    {
+        return $value == null && Craft::$app->getPlugins()->isPluginInstalled('commerce');
+    }
+
+    /**
+     * @param string|null $value
+     * @return bool
+     * @since 1.3.0
+     */
+    public function isUseWeightUnit(?string $value): bool
+    {
+        return $value == null && Craft::$app->getPlugins()->isPluginInstalled('commerce');
     }
 }

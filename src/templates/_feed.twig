@@ -15,7 +15,6 @@
         <channel>
             <title><![CDATA[{{ siteName }}]]></title>
             <link><![CDATA[{{ siteUrl }}]]></link>
-
             {% for element in elements %}
                 {% if
                     isCommerceInstalled and
@@ -30,7 +29,6 @@
                     {% include 'google-shopping-feed-pro/_includes/item' %}
                 {% endif %}
             {% endfor %}
-
         </channel>
     </rss>
 {% endspaceless %}

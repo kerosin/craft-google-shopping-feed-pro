@@ -1,11 +1,12 @@
 {# @var craft \craft\web\twig\variables\CraftVariable #}
 {#
 /**
- * @author    kerosin
- * @copyright Copyright (c) 2021 kerosin
- * @link      https://github.com/kerosin
- * @package   GoogleShoppingFeedPro
- * @since     1.0.1
+ * @author      kerosin
+ * @copyright   Copyright (c) 2021 kerosin
+ * @link        https://github.com/kerosin
+ * @package     GoogleShoppingFeedPro
+ * @since       1.0.1
+ * @deprecated  in 1.3.0
  */
 #}
 
@@ -16,6 +17,7 @@
  * @param string field
  * @param string|null customValue
  * @param string separator
+ * @deprecated in 1.3.0
  */
 #}
 {% macro baseField(tag, element, field, customValue, separator = ',') %}
@@ -108,6 +110,7 @@
  * @param string|null unitDefaultValue
  * @param bool format
  * @param bool spaceUnit
+ * @deprecated in 1.3.0
  */
 #}
 {% macro measureField(tag, element, field, unitField, unitCustomValue, unitDefaultValue, format = false, spaceUnit = true) %}
@@ -135,6 +138,7 @@
  * @param \craft\base\Element element
  * @param string fieldFrom
  * @param string fieldTo
+ * @deprecated in 1.3.0
  */
 #}
 {% macro dateRangeField(tag, element, fieldFrom, fieldTo) %}
@@ -163,6 +167,7 @@
  * @param \craft\base\Element element
  * @param string field
  * @param bool multiple
+ * @deprecated in 1.3.0
  */
 #}
 {% macro assetField(tag, element, field, multiple = false) %}

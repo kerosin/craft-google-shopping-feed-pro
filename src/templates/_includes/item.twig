@@ -9,318 +9,418 @@
  */
 #}
 
-{% import 'google-shopping-feed-pro/_macros/fields' as fields %}
+{% import 'google-shopping-feed-pro/_macros/xml' as xml %}
 
-{% set isCommerceInstalled = craft.app.plugins.isPluginInstalled('commerce') %}
+{% set currencyIso = craft.googleShoppingFeedPro.elementCurrencyIso(
+    element,
+    settings.currencyField,
+    settings.currencyCustomValue
+) %}
 
 <item>
 
     {# id #}
-    {{ fields.baseField('id', element, settings.idField) }}
+    {{ xml.element({
+        tag: 'id',
+        element: element,
+        field: settings.idField
+    }) }}
 
     {# title #}
-    {{ fields.baseField('title', element, settings.titleField) }}
+    {{ xml.element({
+        tag: 'title',
+        element: element,
+        field: settings.titleField
+    }) }}
 
     {# description #}
-    {{ fields.baseField('description', element, settings.descriptionField) }}
+    {{ xml.element({
+        tag: 'description',
+        element: element,
+        field: settings.descriptionField
+    }) }}
 
     {# link #}
-    {% if element.url is not empty %}
-        {% if
-            isCommerceInstalled and
-            settings.useProductUrl and
-            element is instance of ('craft\\commerce\\elements\\Variant') and
-            element.product is not empty
-        %}
-            {% set url = element.product.url %}
-        {% else %}
-            {% set url = element.url %}
-        {% endif %}
-        {% if url is not empty %}
-            <g:link><![CDATA[{{ url }}]]></g:link>
-        {% endif %}
-    {% endif %}
+    {{ xml.element({
+        tag: 'link',
+        value: craft.googleShoppingFeedPro.elementUrl(element)
+    }) }}
 
     {# image_link #}
-    {{ fields.assetField('image_link', element, settings.imageLinkField) }}
+    {{ xml.element({
+        tag: 'image_link',
+        element: element,
+        field: settings.imageLinkField
+    }) }}
 
     {# additional_image_link #}
-    {{ fields.assetField('additional_image_link', element, settings.additionalImageLinkField, true) }}
+    {{ xml.element({
+        tag: 'additional_image_link',
+        element: element,
+        field: settings.additionalImageLinkField,
+        multiple: true
+    }) }}
 
     {# availability #}
-    {% if craft.googleShoppingFeedPro.isCustomValue(settings.availabilityField) %}
-        {% set availability = settings.availabilityCustomValue %}
-    {% elseif settings.availabilityField is not empty %}
-        {% set availability = craft.googleShoppingFeedPro.elementFieldValue(
-            element,
-            settings.availabilityField
-        ) %}
-    {% elseif isCommerceInstalled %}
-        {% if element is instance of('craft\\commerce\\elements\\Product') %}
-            {% if element.defaultVariant.hasUnlimitedStock or element.defaultVariant.stock > 0 %}
-                {% set availability = constant('AVAILABILITY_IN_STOCK', settings) %}
-            {% else %}
-                {% set availability = constant('AVAILABILITY_OUT_OF_STOCK', settings) %}
-            {% endif %}
-        {% elseif element is instance of('craft\\commerce\\elements\\Variant') %}
-            {% if element.hasUnlimitedStock or element.stock > 0 %}
-                {% set availability = constant('AVAILABILITY_IN_STOCK', settings) %}
-            {% else %}
-                {% set availability = constant('AVAILABILITY_OUT_OF_STOCK', settings) %}
-            {% endif %}
-        {% endif %}
-    {% endif %}
-    {% if availability is defined and availability is not empty %}
-        {% set availability = availability|striptags|trim %}
-    {% else %}
-        {% set availability = constant('AVAILABILITY_IN_STOCK', settings) %}
-    {% endif %}
-    <g:availability><![CDATA[{{ availability }}]]></g:availability>
+    {{ xml.element({
+        tag: 'availability',
+        value: craft.googleShoppingFeedPro.elementAvailabilityFieldValue(element)
+    }) }}
 
     {# availability_date #}
-    {{ fields.baseField('availability_date', element, settings.availabilityDateField) }}
+    {{ xml.element({
+        tag: 'availability_date',
+        element: element,
+        field: settings.availabilityDateField
+    }) }}
 
     {# cost_of_goods_sold #}
-    {{ fields.measureField(
-        'cost_of_goods_sold',
-        element,
-        settings.costOfGoodsSoldField,
-        settings.currencyField,
-        settings.currencyCustomValue,
-        (isCommerceInstalled ? craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso),
-        true
-    ) }}
+    {{ xml.element({
+        tag: 'cost_of_goods_sold',
+        element: element,
+        field: settings.costOfGoodsSoldField,
+        suffix: currencyIso,
+        number: true,
+        format: true
+    }) }}
 
     {# expiration_date #}
-    {{ fields.baseField('expiration_date', element, settings.expirationDateField) }}
+    {{ xml.element({
+        tag: 'expiration_date',
+        element: element,
+        field: settings.expirationDateField
+    }) }}
 
     {# price #}
-    {{ fields.measureField(
-        'price',
-        element,
-        settings.priceField,
-        settings.currencyField,
-        settings.currencyCustomValue,
-        (isCommerceInstalled ? craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso),
-        true
-    ) }}
+    {{ xml.element({
+        tag: 'price',
+        element: element,
+        field: settings.priceField,
+        suffix: currencyIso,
+        number: true,
+        format: true
+    }) }}
 
     {# sale_price #}
     {% if settings.priceField is not empty and settings.salePriceField is not empty %}
         {% set price = craft.googleShoppingFeedPro.elementFieldValue(element, settings.priceField) %}
         {% set salePrice = craft.googleShoppingFeedPro.elementFieldValue(element, settings.salePriceField) %}
+
         {% if price is not empty and salePrice is not empty and salePrice < price %}
-            {{ fields.measureField(
-                'sale_price',
-                element,
-                settings.salePriceField,
-                settings.currencyField,
-                settings.currencyCustomValue,
-                (isCommerceInstalled ? craft.commerce.paymentCurrencies.primaryPaymentCurrencyIso),
-                true
-            ) }}
+            {{ xml.element({
+                tag: 'sale_price',
+                element: element,
+                field: settings.salePriceField,
+                suffix: currencyIso,
+                number: true,
+                format: true
+            }) }}
 
             {# sale_price_effective_date #}
             {% if
                 settings.salePriceEffectiveDateFromField is not empty and
                 settings.salePriceEffectiveDateToField is not empty
             %}
-                {% if craft.googleShoppingFeedPro.isUseSaleStartDate(settings.salePriceEffectiveDateFromField) %}
-                    {% set dateFrom = craft.googleShoppingFeedPro.elementSalesMinStartDate(element) %}
-                {% else %}
-                    {% set dateFrom = craft.googleShoppingFeedPro.elementFieldValue(
-                        element,
-                        settings.salePriceEffectiveDateFromField
-                    ) %}
-                {% endif %}
-                {% if dateFrom is instance of('DateTime') %}
-                    {% set dateFrom = dateFrom|atom %}
-                {% else %}
-                    {% set dateFrom = dateFrom|striptags|trim %}
-                {% endif %}
-                {% if craft.googleShoppingFeedPro.isUseSaleEndDate(settings.salePriceEffectiveDateToField) %}
-                    {% set dateTo = craft.googleShoppingFeedPro.elementSalesMaxEndDate(element) %}
-                {% else %}
-                    {% set dateTo = craft.googleShoppingFeedPro.elementFieldValue(
-                        element,
-                        settings.salePriceEffectiveDateToField
-                    ) %}
-                {% endif %}
-                {% if dateTo is instance of('DateTime') %}
-                    {% set dateTo = dateTo|atom %}
-                {% else %}
-                    {% set dateTo = dateTo|striptags|trim %}
-                {% endif %}
-                {% if dateFrom is not empty and dateTo is not empty %}
-                    <g:sale_price_effective_date><![CDATA[{{ dateFrom }}/{{ dateTo }}]]></g:sale_price_effective_date>
-                {% endif %}
+                {% set dateFrom = craft.googleShoppingFeedPro.elementSaleStartDate(
+                    element,
+                    settings.salePriceEffectiveDateFromField
+                ) %}
+                {% set dateTo = craft.googleShoppingFeedPro.elementSaleEndDate(
+                    element,
+                    settings.salePriceEffectiveDateToField
+                ) %}
+
+                {{ xml.element({
+                    tag: 'sale_price_effective_date',
+                    value: [dateFrom, dateTo],
+                    separator: '/'
+                }) }}
             {% endif %}
         {% endif %}
     {% endif %}
 
     {# unit_pricing_measure #}
-    {{ fields.measureField(
-        'unit_pricing_measure',
-        element,
-        settings.unitPricingMeasureField,
-        settings.unitPricingMeasureUnitField,
-        settings.unitPricingMeasureUnitCustomValue,
-        null,
-        false,
-        false
-    ) }}
+    {{ xml.element({
+        tag: 'unit_pricing_measure',
+        element: element,
+        field: settings.unitPricingMeasureField,
+        suffix: craft.googleShoppingFeedPro.elementFieldValue(
+            element,
+            settings.unitPricingMeasureUnitField,
+            settings.unitPricingMeasureUnitCustomValue
+        ),
+        suffixSeparator: '',
+        number: true
+    }) }}
 
     {# unit_pricing_base_measure #}
-    {{ fields.measureField(
-        'unit_pricing_base_measure',
-        element,
-        settings.unitPricingBaseMeasureField,
-        settings.unitPricingBaseMeasureUnitField,
-        settings.unitPricingBaseMeasureUnitCustomValue,
-        null,
-        false,
-        false
-    ) }}
+    {{ xml.element({
+        tag: 'unit_pricing_base_measure',
+        element: element,
+        field: settings.unitPricingBaseMeasureField,
+        suffix: craft.googleShoppingFeedPro.elementFieldValue(
+            element,
+            settings.unitPricingBaseMeasureUnitField,
+            settings.unitPricingBaseMeasureUnitCustomValue
+        ),
+        suffixSeparator: '',
+        number: true
+    }) }}
 
     {# installment #}
-    {{ fields.baseField('installment', element, settings.installmentField) }}
+    {{ xml.element({
+        tag: 'installment',
+        element: element,
+        field: settings.installmentField
+    }) }}
 
     {# subscription_cost #}
-    {{ fields.baseField('subscription_cost', element, settings.subscriptionCostField) }}
+    {{ xml.element({
+        tag: 'subscription_cost',
+        element: element,
+        field: settings.subscriptionCostField
+    }) }}
 
     {# loyalty_points #}
-    {{ fields.baseField('loyalty_points', element, settings.loyaltyPointsField) }}
+    {{ xml.element({
+        tag: 'loyalty_points',
+        element: element,
+        field: settings.loyaltyPointsField
+    }) }}
 
     {# google_product_category #}
-    {{ fields.baseField(
-        'google_product_category',
-        element,
-        settings.googleProductCategoryField,
-        settings.googleProductCategoryCustomValue
-    ) }}
+    {{ xml.element({
+        tag: 'google_product_category',
+        element: element,
+        field: settings.googleProductCategoryField,
+        customValue: settings.googleProductCategoryCustomValue
+    }) }}
 
     {# product_type #}
-    {{ fields.baseField('product_type', element, settings.productTypeField, null, ' > ') }}
+    {{ xml.element({
+        tag: 'product_type',
+        element: element,
+        field: settings.productTypeField,
+        separator: ' > '
+    }) }}
 
     {# brand #}
-    {{ fields.baseField('brand', element, settings.brandField, settings.brandCustomValue) }}
+    {{ xml.element({
+        tag: 'brand',
+        element: element,
+        field: settings.brandField,
+        customValue: settings.brandCustomValue
+    }) }}
 
     {# gtin #}
-    {{ fields.baseField('gtin', element, settings.gtinField) }}
+    {{ xml.element({
+        tag: 'gtin',
+        element: element,
+        field: settings.gtinField
+    }) }}
 
     {# mpn #}
-    {{ fields.baseField('mpn', element, settings.mpnField) }}
+    {{ xml.element({
+        tag: 'mpn',
+        element: element,
+        field: settings.mpnField
+    }) }}
 
     {# identifier_exists #}
-    {{ fields.baseField('identifier_exists', element, settings.identifierExistsField) }}
+    {{ xml.element({
+        tag: 'identifier_exists',
+        element: element,
+        field: settings.identifierExistsField
+    }) }}
 
     {# condition #}
-    {{ fields.baseField('condition', element, settings.conditionField, settings.conditionCustomValue) }}
+    {{ xml.element({
+        tag: 'condition',
+        element: element,
+        field: settings.conditionField,
+        customValue: settings.conditionCustomValue
+    }) }}
 
     {# adult #}
-    {{ fields.baseField('adult', element, settings.adultField, settings.adultCustomValue) }}
+    {{ xml.element({
+        tag: 'adult',
+        element: element,
+        field: settings.adultField,
+        customValue: settings.adultCustomValue
+    }) }}
 
     {# multipack #}
-    {{ fields.baseField('multipack', element, settings.multipackField) }}
+    {{ xml.element({
+        tag: 'multipack',
+        element: element,
+        field: settings.multipackField
+    }) }}
 
     {# is_bundle #}
-    {{ fields.baseField('is_bundle', element, settings.isBundleField) }}
+    {{ xml.element({
+        tag: 'is_bundle',
+        element: element,
+        field: settings.isBundleField
+    }) }}
 
     {# energy_efficiency_class #}
-    {{ fields.baseField(
-        'energy_efficiency_class',
-        element,
-        settings.energyEfficiencyClassField,
-        settings.energyEfficiencyClassCustomValue
-    ) }}
+    {{ xml.element({
+        tag: 'energy_efficiency_class',
+        element: element,
+        field: settings.energyEfficiencyClassField,
+        customValue: settings.energyEfficiencyClassCustomValue
+    }) }}
 
     {# min_energe_efficiency_class #}
-    {{ fields.baseField(
-        'min_energy_efficiency_class',
-        element,
-        settings.minEnergyEfficiencyClassField,
-        settings.minEnergyEfficiencyClassCustomValue
-    ) }}
+    {{ xml.element({
+        tag: 'min_energy_efficiency_class',
+        element: element,
+        field: settings.minEnergyEfficiencyClassField,
+        customValue: settings.minEnergyEfficiencyClassCustomValue
+    }) }}
 
     {# max_energy_efficiency_class #}
-    {{ fields.baseField(
-        'max_energy_efficiency_class',
-        element,
-        settings.maxEnergyEfficiencyClassField,
-        settings.maxEnergyEfficiencyClassCustomValue
-    ) }}
+    {{ xml.element({
+        tag: 'max_energy_efficiency_class',
+        element: element,
+        field: settings.maxEnergyEfficiencyClassField,
+        customValue: settings.maxEnergyEfficiencyClassCustomValue
+    }) }}
 
     {# age_group #}
-    {{ fields.baseField('age_group', element, settings.ageGroupField, settings.ageGroupCustomValue) }}
+    {{ xml.element({
+        tag: 'age_group',
+        element: element,
+        field: settings.ageGroupField,
+        customValue: settings.ageGroupCustomValue
+    }) }}
 
     {# color #}
-    {{ fields.baseField('color', element, settings.colorField, settings.colorCustomValue) }}
+    {{ xml.element({
+        tag: 'color',
+        element: element,
+        field: settings.colorField,
+        customValue: settings.colorCustomValue
+    }) }}
 
     {# gender #}
-    {{ fields.baseField('gender', element, settings.genderField, settings.genderCustomValue) }}
+    {{ xml.element({
+        tag: 'gender',
+        element: element,
+        field: settings.genderField,
+        customValue: settings.genderCustomValue
+    }) }}
 
     {# material #}
-    {{ fields.baseField('material', element, settings.materialField, settings.materialCustomValue) }}
+    {{ xml.element({
+        tag: 'material',
+        element: element,
+        field: settings.materialField,
+        customValue: settings.materialCustomValue
+    }) }}
 
     {# pattern #}
-    {{ fields.baseField('pattern', element, settings.patternField, settings.patternCustomValue) }}
+    {{ xml.element({
+        tag: 'pattern',
+        element: element,
+        field: settings.patternField,
+        customValue: settings.patternCustomValue
+    }) }}
 
     {# size #}
-    {{ fields.baseField('size', element, settings.sizeField, settings.sizeCustomValue) }}
+    {{ xml.element({
+        tag: 'size',
+        element: element,
+        field: settings.sizeField,
+        customValue: settings.sizeCustomValue
+    }) }}
 
     {# size_type #}
-    {{ fields.baseField('size_type', element, settings.sizeTypeField, settings.sizeTypeCustomValue) }}
+    {{ xml.element({
+        tag: 'size_type',
+        element: element,
+        field: settings.sizeTypeField,
+        customValue: settings.sizeTypeCustomValue
+    }) }}
 
     {# size_system #}
-    {{ fields.baseField('size_system', element, settings.sizeSystemField, settings.sizeSystemCustomValue) }}
+    {{ xml.element({
+        tag: 'size_system',
+        element: element,
+        field: settings.sizeSystemField,
+        customValue: settings.sizeSystemCustomValue
+    }) }}
 
     {# item_group_id #}
-    {{ fields.baseField('item_group_id', element, settings.itemGroupIdField) }}
+    {{ xml.element({
+        tag: 'item_group_id',
+        value: craft.googleShoppingFeedPro.elementItemGroupIdFieldValue(element)
+    }) }}
 
     {# product_length #}
-    {{ fields.measureField(
-        'product_length',
-        element,
-        settings.productLengthField,
-        settings.productLengthUnitField,
-        settings.productLengthUnitCustomValue,
-        (isCommerceInstalled ? craft.commerce.settings.dimensionUnits)
-    ) }}
+    {{ xml.element({
+        tag: 'product_length',
+        element: element,
+        field: settings.productLengthField,
+        suffix: craft.googleShoppingFeedPro.elementDimensionUnit(
+            element,
+            settings.productLengthUnitField,
+            settings.productLengthUnitCustomValue
+        ),
+        number: true
+    }) }}
 
     {# product_width #}
-    {{ fields.measureField(
-        'product_width',
-        element,
-        settings.productWidthField,
-        settings.productWidthUnitField,
-        settings.productWidthUnitCustomValue,
-        (isCommerceInstalled ? craft.commerce.settings.dimensionUnits)
-    ) }}
+    {{ xml.element({
+        tag: 'product_width',
+        element: element,
+        field: settings.productWidthField,
+        suffix: craft.googleShoppingFeedPro.elementDimensionUnit(
+            element,
+            settings.productWidthUnitField,
+            settings.productWidthUnitCustomValue
+        ),
+        number: true
+    }) }}
 
     {# product_height #}
-    {{ fields.measureField(
-        'product_height',
-        element,
-        settings.productHeightField,
-        settings.productHeightUnitField,
-        settings.productHeightUnitCustomValue,
-        (isCommerceInstalled ? craft.commerce.settings.dimensionUnits)
-    ) }}
+    {{ xml.element({
+        tag: 'product_height',
+        element: element,
+        field: settings.productHeightField,
+        suffix: craft.googleShoppingFeedPro.elementDimensionUnit(
+            element,
+            settings.productHeightUnitField,
+            settings.productHeightUnitCustomValue
+        ),
+        number: true
+    }) }}
 
     {# product_weight #}
-    {{ fields.measureField(
-        'product_weight',
-        element,
-        settings.productWeightField,
-        settings.productWeightUnitField,
-        settings.productWeightUnitCustomValue,
-        (isCommerceInstalled ? craft.commerce.settings.weightUnits)
-    ) }}
+    {{ xml.element({
+        tag: 'product_weight',
+        element: element,
+        field: settings.productWeightField,
+        suffix: craft.googleShoppingFeedPro.elementWeightUnit(
+            element,
+            settings.productWeightUnitField,
+            settings.productWeightUnitCustomValue
+        ),
+        number: true
+    }) }}
 
     {# product_detail #}
-    {{ fields.baseField('product_detail', element, settings.productDetailField) }}
+    {{ xml.element({
+        tag: 'product_detail',
+        element: element,
+        field: settings.productDetailField
+    }) }}
 
     {# product_highlight #}
-    {{ fields.baseField('product_highlight', element, settings.productHighlightField) }}
+    {{ xml.element({
+        tag: 'product_highlight',
+        element: element,
+        field: settings.productHighlightField
+    }) }}
 
 </item>

@@ -37,15 +37,16 @@ class GoogleShoppingFeedProVariable
 
     /**
      * @param Element $element
-     * @param string $field
+     * @param string|null $field
+     * @param mixed $customValue
      * @return mixed
      * @throws Exception
      */
-    public function elementFieldValue(Element $element, string $field)
+    public function elementFieldValue(Element $element, ?string $field, $customValue = null)
     {
         return GoogleShoppingFeedPro::$plugin
             ->googleShoppingFeedProService
-            ->getElementFieldValue($element, $field);
+            ->getElementFieldValue($element, $field, $customValue);
     }
 
     /**
@@ -73,7 +74,117 @@ class GoogleShoppingFeedProVariable
     }
 
     /**
-     * @param string $value
+     * @param Element $element
+     * @return string|null
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function elementUrl(Element $element): ?string
+    {
+        return GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService->getElementUrl($element);
+    }
+
+    /**
+     * @param Element $element
+     * @return mixed
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function elementAvailabilityFieldValue(Element $element)
+    {
+        return GoogleShoppingFeedPro::$plugin
+            ->googleShoppingFeedProService
+            ->getElementAvailabilityFieldValue($element);
+    }
+
+    /**
+     * @param Element $element
+     * @return mixed
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function elementItemGroupIdFieldValue(Element $element)
+    {
+        return GoogleShoppingFeedPro::$plugin
+            ->googleShoppingFeedProService
+            ->getElementItemGroupIdFieldValue($element);
+    }
+
+    /**
+     * @param Element $element
+     * @param string|null $field
+     * @param mixed $customValue
+     * @return string|null
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function elementCurrencyIso(Element $element, ?string $field, $customValue = null): ?string
+    {
+        return GoogleShoppingFeedPro::$plugin
+            ->googleShoppingFeedProService
+            ->getElementCurrencyIso($element, $field, $customValue);
+    }
+
+    /**
+     * @param Element $element
+     * @param string|null $field
+     * @param mixed $customValue
+     * @return string|null
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function elementDimensionUnit(Element $element, ?string $field, $customValue = null): ?string
+    {
+        return GoogleShoppingFeedPro::$plugin
+            ->googleShoppingFeedProService
+            ->getElementDimensionUnit($element, $field, $customValue);
+    }
+
+    /**
+     * @param Element $element
+     * @param string|null $field
+     * @param mixed $customValue
+     * @return string|null
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function elementWeightUnit(Element $element, ?string $field, $customValue = null): ?string
+    {
+        return GoogleShoppingFeedPro::$plugin
+            ->googleShoppingFeedProService
+            ->getElementWeightUnit($element, $field, $customValue);
+    }
+
+    /**
+     * @param Element $element
+     * @param string|null $field
+     * @return string|null
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function elementSaleStartDate(Element $element, ?string $field): ?string
+    {
+        return GoogleShoppingFeedPro::$plugin
+            ->googleShoppingFeedProService
+            ->getElementSaleStartDate($element, $field);
+    }
+
+    /**
+     * @param Element $element
+     * @param string|null $field
+     * @return string|null
+     * @throws Exception
+     * @since 1.3.0
+     */
+    public function elementSaleEndDate(Element $element, ?string $field): ?string
+    {
+        return GoogleShoppingFeedPro::$plugin
+            ->googleShoppingFeedProService
+            ->getElementSaleEndDate($element, $field);
+    }
+
+    /**
+     * @param string|null $value
      * @return bool
      */
     public function isCustomValue(?string $value): bool
@@ -82,9 +193,10 @@ class GoogleShoppingFeedProVariable
     }
 
     /**
-     * @param string $value
+     * @param string|null $value
      * @return bool
      * @since 1.1.0
+     * @deprecated in 1.3.0
      */
     public function isUseProductId(?string $value): bool
     {
@@ -92,9 +204,10 @@ class GoogleShoppingFeedProVariable
     }
 
     /**
-     * @param string $value
+     * @param string|null $value
      * @return bool
      * @since 1.2.0
+     * @deprecated in 1.3.0
      */
     public function isUseSaleStartDate(?string $value): bool
     {
@@ -102,9 +215,10 @@ class GoogleShoppingFeedProVariable
     }
 
     /**
-     * @param string $value
+     * @param string|null $value
      * @return bool
      * @since 1.2.0
+     * @deprecated in 1.3.0
      */
     public function isUseSaleEndDate(?string $value): bool
     {
