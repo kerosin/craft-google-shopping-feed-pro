@@ -1,5 +1,9 @@
 # Google Shopping Feed Pro Changelog
 
+## 1.3.1 - 2021-11-19
+### Fixed
+- Fixed bug that could occur if Craft Commerce plugin was not installed 
+
 ## 1.3.0 - 2021-11-16
 ### Updated
 - Updated feed template
