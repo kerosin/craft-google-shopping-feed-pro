@@ -11,6 +11,7 @@ namespace kerosin\googleshoppingfeedpro;
 use kerosin\googleshoppingfeedpro\services\GoogleShoppingFeedProService;
 use kerosin\googleshoppingfeedpro\variables\GoogleShoppingFeedProVariable;
 use kerosin\googleshoppingfeedpro\models\Settings;
+use kerosin\googleshoppingfeedpro\web\twig\Extension;
 
 use Craft;
 use craft\base\Plugin;
@@ -77,8 +78,10 @@ class GoogleShoppingFeedPro extends Plugin
     public function init()
     {
         parent::init();
+
         self::$plugin = $this;
 
+        $this->registerTwigExtensions();
         $this->registerRoutes();
         $this->registerVariables();
     }
@@ -109,6 +112,16 @@ class GoogleShoppingFeedPro extends Plugin
                 'settings' => $this->getSettings(),
             ]
         );
+    }
+
+    /**
+     * Registers twig extensions.
+     *
+     * @return void
+     */
+    protected function registerTwigExtensions(): void
+    {
+        Craft::$app->view->registerTwigExtension(new Extension);
     }
 
     /**
