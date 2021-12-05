@@ -206,6 +206,17 @@ class GoogleShoppingFeedProVariable
         return $this->getService()->isUseSaleEndDate($value);
     }
 
+    /**
+     * @param Element $element
+     * @return bool
+     * @throws Exception
+     * @since 1.4.0
+     */
+    public function isIncludeElementVariants(Element $element): bool
+    {
+        return $this->getService()->isIncludeElementVariants($element);
+    }
+
     // Protected Methods
     // =========================================================================
 
