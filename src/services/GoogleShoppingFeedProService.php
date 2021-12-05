@@ -66,7 +66,7 @@ class GoogleShoppingFeedProService extends Component
     {
         $result = [];
 
-        if (!Craft::$app->getPlugins()->isPluginInstalled('commerce')) {
+        if (!$this->isCommerceInstalled()) {
             return $result;
         }
 
@@ -159,7 +159,7 @@ class GoogleShoppingFeedProService extends Component
 
         $object = $element;
 
-        if (Craft::$app->getPlugins()->isPluginInstalled('commerce')) {
+        if ($this->isCommerceInstalled()) {
             if ($element instanceof Product) {
                 if (isset($element->getDefaultVariant()->{$field})) {
                     $object = $element->getDefaultVariant();
@@ -559,7 +559,7 @@ class GoogleShoppingFeedProService extends Component
      */
     public function isUseStockField(?string $value): bool
     {
-        return $value == null && Craft::$app->getPlugins()->isPluginInstalled('commerce');
+        return $value == null && $this->isCommerceInstalled();
     }
 
     /**
@@ -569,7 +569,7 @@ class GoogleShoppingFeedProService extends Component
      */
     public function isUseBaseCurrency(?string $value): bool
     {
-        return $value == null && Craft::$app->getPlugins()->isPluginInstalled('commerce');
+        return $value == null && $this->isCommerceInstalled();
     }
 
     /**
@@ -579,7 +579,7 @@ class GoogleShoppingFeedProService extends Component
      */
     public function isUseDimensionUnit(?string $value): bool
     {
-        return $value == null && Craft::$app->getPlugins()->isPluginInstalled('commerce');
+        return $value == null && $this->isCommerceInstalled();
     }
 
     /**
@@ -589,7 +589,16 @@ class GoogleShoppingFeedProService extends Component
      */
     public function isUseWeightUnit(?string $value): bool
     {
-        return $value == null && Craft::$app->getPlugins()->isPluginInstalled('commerce');
+        return $value == null && $this->isCommerceInstalled();
+    }
+
+    /**
+     * @return bool
+     * @since 1.4.0
+     */
+    public function isCommerceInstalled(): bool
+    {
+        return Craft::$app->getPlugins()->isPluginInstalled('commerce');
     }
 
     // Protected Methods
