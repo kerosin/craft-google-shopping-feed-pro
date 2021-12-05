@@ -9,6 +9,7 @@
 namespace kerosin\googleshoppingfeedpro\services;
 
 use kerosin\googleshoppingfeedpro\GoogleShoppingFeedPro;
+use kerosin\googleshoppingfeedpro\models\Settings;
 
 use Craft;
 use craft\base\Component;
@@ -92,13 +93,11 @@ class GoogleShoppingFeedProService extends Component
             $elements = array_slice($elements, 0, 10);
         }
 
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
-
         return Craft::$app->getView()->renderTemplate(
             'google-shopping-feed-pro/_feed',
             [
                 'elements' => $elements,
-                'settings' => $settings,
+                'settings' => $this->getSettings(),
             ],
             View::TEMPLATE_MODE_CP
         );
@@ -166,12 +165,11 @@ class GoogleShoppingFeedProService extends Component
                     $object = $element->getDefaultVariant();
                 }
             } elseif ($element instanceof Variant) {
-                $settings = GoogleShoppingFeedPro::$plugin->getSettings();
                 $product = $element->getProduct();
 
                 if (
                     !isset($element->{$field}) &&
-                    $settings->useProductData &&
+                    $this->getSettings()->useProductData &&
                     $product != null &&
                     isset($product->{$field})
                 ) {
@@ -348,11 +346,10 @@ class GoogleShoppingFeedProService extends Component
     public function getElementUrl(Element $element): ?string
     {
         $result = $element->getUrl();
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
 
         if (
             $element instanceof Variant &&
-            $settings->useProductUrl &&
+            $this->getSettings()->useProductUrl &&
             $element->getProduct() != null
         ) {
             $result = $element->getProduct()->getUrl();
@@ -369,7 +366,7 @@ class GoogleShoppingFeedProService extends Component
      */
     public function getElementAvailabilityFieldValue(Element $element)
     {
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
+        $settings = $this->getSettings();
         $result = $settings::AVAILABILITY_IN_STOCK;
 
         if ($this->isUseStockField($settings->availabilityField)) {
@@ -402,7 +399,7 @@ class GoogleShoppingFeedProService extends Component
     public function getElementItemGroupIdFieldValue(Element $element)
     {
         $result = null;
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
+        $settings = $this->getSettings();
 
         if ($this->isUseProductId($settings->itemGroupIdField)) {
             if ($element instanceof Variant && $element->getProduct() != null) {
@@ -522,9 +519,7 @@ class GoogleShoppingFeedProService extends Component
      */
     public function isCustomValue(?string $value): bool
     {
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
-
-        return $value == $settings::OPTION_CUSTOM_VALUE;
+        return $value == $this->getSettings()::OPTION_CUSTOM_VALUE;
     }
 
     /**
@@ -534,9 +529,7 @@ class GoogleShoppingFeedProService extends Component
      */
     public function isUseProductId(?string $value): bool
     {
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
-
-        return $value == $settings::OPTION_USE_PRODUCT_ID;
+        return $value == $this->getSettings()::OPTION_USE_PRODUCT_ID;
     }
 
     /**
@@ -546,9 +539,7 @@ class GoogleShoppingFeedProService extends Component
      */
     public function isUseSaleStartDate(?string $value): bool
     {
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
-
-        return $value == $settings::OPTION_USE_SALE_START_DATE;
+        return $value == $this->getSettings()::OPTION_USE_SALE_START_DATE;
     }
 
     /**
@@ -558,9 +549,7 @@ class GoogleShoppingFeedProService extends Component
      */
     public function isUseSaleEndDate(?string $value): bool
     {
-        $settings = GoogleShoppingFeedPro::$plugin->getSettings();
-
-        return $value == $settings::OPTION_USE_SALE_END_DATE;
+        return $value == $this->getSettings()::OPTION_USE_SALE_END_DATE;
     }
 
     /**
@@ -601,5 +590,17 @@ class GoogleShoppingFeedProService extends Component
     public function isUseWeightUnit(?string $value): bool
     {
         return $value == null && Craft::$app->getPlugins()->isPluginInstalled('commerce');
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @return Settings
+     * @since 1.4.0
+     */
+    protected function getSettings(): Settings
+    {
+        return GoogleShoppingFeedPro::$plugin->getSettings();
     }
 }
