@@ -11,11 +11,8 @@
 
 {% import 'google-shopping-feed-pro/_macros/xml' as xml %}
 
-{% set currencyIso = craft.googleShoppingFeedPro.elementCurrencyIso(
-    element,
-    settings.currencyField,
-    settings.currencyCustomValue
-) %}
+{% set variables = craft.googleShoppingFeedPro %}
+{% set currencyIso = variables.elementCurrencyIso(element, settings.currencyField, settings.currencyCustomValue) %}
 
 <item>
 
@@ -43,7 +40,7 @@
     {# link #}
     {{ xml.element({
         tag: 'link',
-        value: craft.googleShoppingFeedPro.elementUrl(element)
+        value: variables.elementUrl(element)
     }) }}
 
     {# image_link #}
@@ -64,7 +61,7 @@
     {# availability #}
     {{ xml.element({
         tag: 'availability',
-        value: craft.googleShoppingFeedPro.elementAvailabilityFieldValue(element)
+        value: variables.elementAvailabilityFieldValue(element)
     }) }}
 
     {# availability_date #}
@@ -103,8 +100,8 @@
 
     {# sale_price #}
     {% if settings.priceField is not empty and settings.salePriceField is not empty %}
-        {% set price = craft.googleShoppingFeedPro.elementFieldValue(element, settings.priceField) %}
-        {% set salePrice = craft.googleShoppingFeedPro.elementFieldValue(element, settings.salePriceField) %}
+        {% set price = variables.elementFieldValue(element, settings.priceField) %}
+        {% set salePrice = variables.elementFieldValue(element, settings.salePriceField) %}
 
         {% if price is not empty and salePrice is not empty and salePrice < price %}
             {{ xml.element({
@@ -121,14 +118,8 @@
                 settings.salePriceEffectiveDateFromField is not empty and
                 settings.salePriceEffectiveDateToField is not empty
             %}
-                {% set dateFrom = craft.googleShoppingFeedPro.elementSaleStartDate(
-                    element,
-                    settings.salePriceEffectiveDateFromField
-                ) %}
-                {% set dateTo = craft.googleShoppingFeedPro.elementSaleEndDate(
-                    element,
-                    settings.salePriceEffectiveDateToField
-                ) %}
+                {% set dateFrom = variables.elementSaleStartDate(element, settings.salePriceEffectiveDateFromField) %}
+                {% set dateTo = variables.elementSaleEndDate(element, settings.salePriceEffectiveDateToField) %}
 
                 {{ xml.element({
                     tag: 'sale_price_effective_date',
@@ -144,7 +135,7 @@
         tag: 'unit_pricing_measure',
         element: element,
         field: settings.unitPricingMeasureField,
-        suffix: craft.googleShoppingFeedPro.elementFieldValue(
+        suffix: variables.elementFieldValue(
             element,
             settings.unitPricingMeasureUnitField,
             settings.unitPricingMeasureUnitCustomValue
@@ -158,7 +149,7 @@
         tag: 'unit_pricing_base_measure',
         element: element,
         field: settings.unitPricingBaseMeasureField,
-        suffix: craft.googleShoppingFeedPro.elementFieldValue(
+        suffix: variables.elementFieldValue(
             element,
             settings.unitPricingBaseMeasureUnitField,
             settings.unitPricingBaseMeasureUnitCustomValue
@@ -354,7 +345,7 @@
     {# item_group_id #}
     {{ xml.element({
         tag: 'item_group_id',
-        value: craft.googleShoppingFeedPro.elementItemGroupIdFieldValue(element)
+        value: variables.elementItemGroupIdFieldValue(element)
     }) }}
 
     {# product_length #}
@@ -362,7 +353,7 @@
         tag: 'product_length',
         element: element,
         field: settings.productLengthField,
-        suffix: craft.googleShoppingFeedPro.elementDimensionUnit(
+        suffix: variables.elementDimensionUnit(
             element,
             settings.productLengthUnitField,
             settings.productLengthUnitCustomValue
@@ -375,7 +366,7 @@
         tag: 'product_width',
         element: element,
         field: settings.productWidthField,
-        suffix: craft.googleShoppingFeedPro.elementDimensionUnit(
+        suffix: variables.elementDimensionUnit(
             element,
             settings.productWidthUnitField,
             settings.productWidthUnitCustomValue
@@ -388,7 +379,7 @@
         tag: 'product_height',
         element: element,
         field: settings.productHeightField,
-        suffix: craft.googleShoppingFeedPro.elementDimensionUnit(
+        suffix: variables.elementDimensionUnit(
             element,
             settings.productHeightUnitField,
             settings.productHeightUnitCustomValue
@@ -401,7 +392,7 @@
         tag: 'product_weight',
         element: element,
         field: settings.productWeightField,
-        suffix: craft.googleShoppingFeedPro.elementWeightUnit(
+        suffix: variables.elementWeightUnit(
             element,
             settings.productWeightUnitField,
             settings.productWeightUnitCustomValue
