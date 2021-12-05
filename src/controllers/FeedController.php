@@ -48,10 +48,7 @@ class FeedController extends Controller
         $response->format = Response::FORMAT_RAW;
         $response->getHeaders()->set('Content-Type', 'application/xml; charset=UTF-8');
 
-        /** @var GoogleShoppingFeedProService $googleShoppingFeedProService */
-        $googleShoppingFeedProService = GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService;
-
-        return $googleShoppingFeedProService->getEntriesFeedXml();
+        return $this->getService()->getEntriesFeedXml();
     }
 
     /**
@@ -64,9 +61,18 @@ class FeedController extends Controller
         $response->format = Response::FORMAT_RAW;
         $response->getHeaders()->set('Content-Type', 'application/xml; charset=UTF-8');
 
-        /** @var GoogleShoppingFeedProService $googleShoppingFeedProService */
-        $googleShoppingFeedProService = GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService;
+        return $this->getService()->getProductsFeedXml();
+    }
 
-        return $googleShoppingFeedProService->getProductsFeedXml();
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @return GoogleShoppingFeedProService
+     * @since 1.4.0
+     */
+    protected function getService(): GoogleShoppingFeedProService
+    {
+        return GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService;
     }
 }

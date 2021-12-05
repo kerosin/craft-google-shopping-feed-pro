@@ -9,6 +9,7 @@
 namespace kerosin\googleshoppingfeedpro\variables;
 
 use kerosin\googleshoppingfeedpro\GoogleShoppingFeedPro;
+use kerosin\googleshoppingfeedpro\services\GoogleShoppingFeedProService;
 
 use craft\base\Element;
 
@@ -32,7 +33,7 @@ class GoogleShoppingFeedProVariable
      */
     public function generateFeed(array $elements): void
     {
-        GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService->generateFeed($elements);
+        $this->getService()->generateFeed($elements);
     }
 
     /**
@@ -44,9 +45,7 @@ class GoogleShoppingFeedProVariable
      */
     public function elementFieldValue(Element $element, ?string $field, $customValue = null)
     {
-        return GoogleShoppingFeedPro::$plugin
-            ->googleShoppingFeedProService
-            ->getElementFieldValue($element, $field, $customValue);
+        return $this->getService()->getElementFieldValue($element, $field, $customValue);
     }
 
     /**
@@ -56,9 +55,7 @@ class GoogleShoppingFeedProVariable
      */
     public function elementSalesMinStartDate(Element $element): ?DateTime
     {
-        return GoogleShoppingFeedPro::$plugin
-            ->googleShoppingFeedProService
-            ->getElementSalesMinStartDate($element);
+        return $this->getService()->getElementSalesMinStartDate($element);
     }
 
     /**
@@ -68,9 +65,7 @@ class GoogleShoppingFeedProVariable
      */
     public function elementSalesMaxEndDate(Element $element): ?DateTime
     {
-        return GoogleShoppingFeedPro::$plugin
-            ->googleShoppingFeedProService
-            ->getElementSalesMaxEndDate($element);
+        return $this->getService()->getElementSalesMaxEndDate($element);
     }
 
     /**
@@ -81,7 +76,7 @@ class GoogleShoppingFeedProVariable
      */
     public function elementUrl(Element $element): ?string
     {
-        return GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService->getElementUrl($element);
+        return $this->getService()->getElementUrl($element);
     }
 
     /**
@@ -92,9 +87,7 @@ class GoogleShoppingFeedProVariable
      */
     public function elementAvailabilityFieldValue(Element $element)
     {
-        return GoogleShoppingFeedPro::$plugin
-            ->googleShoppingFeedProService
-            ->getElementAvailabilityFieldValue($element);
+        return $this->getService()->getElementAvailabilityFieldValue($element);
     }
 
     /**
@@ -105,9 +98,7 @@ class GoogleShoppingFeedProVariable
      */
     public function elementItemGroupIdFieldValue(Element $element)
     {
-        return GoogleShoppingFeedPro::$plugin
-            ->googleShoppingFeedProService
-            ->getElementItemGroupIdFieldValue($element);
+        return $this->getService()->getElementItemGroupIdFieldValue($element);
     }
 
     /**
@@ -120,9 +111,7 @@ class GoogleShoppingFeedProVariable
      */
     public function elementCurrencyIso(Element $element, ?string $field, $customValue = null): ?string
     {
-        return GoogleShoppingFeedPro::$plugin
-            ->googleShoppingFeedProService
-            ->getElementCurrencyIso($element, $field, $customValue);
+        return $this->getService()->getElementCurrencyIso($element, $field, $customValue);
     }
 
     /**
@@ -135,9 +124,7 @@ class GoogleShoppingFeedProVariable
      */
     public function elementDimensionUnit(Element $element, ?string $field, $customValue = null): ?string
     {
-        return GoogleShoppingFeedPro::$plugin
-            ->googleShoppingFeedProService
-            ->getElementDimensionUnit($element, $field, $customValue);
+        return $this->getService()->getElementDimensionUnit($element, $field, $customValue);
     }
 
     /**
@@ -150,9 +137,7 @@ class GoogleShoppingFeedProVariable
      */
     public function elementWeightUnit(Element $element, ?string $field, $customValue = null): ?string
     {
-        return GoogleShoppingFeedPro::$plugin
-            ->googleShoppingFeedProService
-            ->getElementWeightUnit($element, $field, $customValue);
+        return $this->getService()->getElementWeightUnit($element, $field, $customValue);
     }
 
     /**
@@ -164,9 +149,7 @@ class GoogleShoppingFeedProVariable
      */
     public function elementSaleStartDate(Element $element, ?string $field): ?string
     {
-        return GoogleShoppingFeedPro::$plugin
-            ->googleShoppingFeedProService
-            ->getElementSaleStartDate($element, $field);
+        return $this->getService()->getElementSaleStartDate($element, $field);
     }
 
     /**
@@ -178,9 +161,7 @@ class GoogleShoppingFeedProVariable
      */
     public function elementSaleEndDate(Element $element, ?string $field): ?string
     {
-        return GoogleShoppingFeedPro::$plugin
-            ->googleShoppingFeedProService
-            ->getElementSaleEndDate($element, $field);
+        return $this->getService()->getElementSaleEndDate($element, $field);
     }
 
     /**
@@ -189,7 +170,7 @@ class GoogleShoppingFeedProVariable
      */
     public function isCustomValue(?string $value): bool
     {
-        return GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService->isCustomValue($value);
+        return $this->getService()->isCustomValue($value);
     }
 
     /**
@@ -200,7 +181,7 @@ class GoogleShoppingFeedProVariable
      */
     public function isUseProductId(?string $value): bool
     {
-        return GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService->isUseProductId($value);
+        return $this->getService()->isUseProductId($value);
     }
 
     /**
@@ -211,7 +192,7 @@ class GoogleShoppingFeedProVariable
      */
     public function isUseSaleStartDate(?string $value): bool
     {
-        return GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService->isUseSaleStartDate($value);
+        return $this->getService()->isUseSaleStartDate($value);
     }
 
     /**
@@ -222,6 +203,18 @@ class GoogleShoppingFeedProVariable
      */
     public function isUseSaleEndDate(?string $value): bool
     {
-        return GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService->isUseSaleEndDate($value);
+        return $this->getService()->isUseSaleEndDate($value);
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @return GoogleShoppingFeedProService
+     * @since 1.4.0
+     */
+    protected function getService(): GoogleShoppingFeedProService
+    {
+        return GoogleShoppingFeedPro::$plugin->googleShoppingFeedProService;
     }
 }
