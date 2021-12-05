@@ -84,7 +84,7 @@
                 <g:{{ tag }}><![CDATA[{{ raw ? value|raw : value }}]]></g:{{ tag }}>
             {% endfor %}
         {% elseif allowEmpty %}
-            <{{ tag }}></{{ tag }}>
+            <g:{{ tag }}/>
         {% endif %}
     {% endif %}
 {% endmacro %}
