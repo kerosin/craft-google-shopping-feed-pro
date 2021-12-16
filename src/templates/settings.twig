@@ -675,6 +675,35 @@
             errors: settings.getErrors('productHighlightField')
         }) }}
 
+        <hr>
+
+        <h2>{{ 'Custom Tags'|t('google-shopping-feed-pro') }}</h2>
+
+        {{ forms.editableTableField({
+            id: 'customTags',
+            name: 'customTags',
+            cols: {
+                name: {
+                    type: 'singleline',
+                    heading: 'Name'|t('google-shopping-feed-pro')
+                },
+                field: {
+                    type: 'select',
+                    heading: 'Field'|t('google-shopping-feed-pro'),
+                    options: [{
+                        label: 'Custom Value'|t('google-shopping-feed-pro'),
+                        value: constant('OPTION_CUSTOM_VALUE', settings)
+                    }]|merge(fieldOptions)
+                },
+                customValue: {
+                    type: 'singleline',
+                    heading: 'Custom Value'|t('google-shopping-feed-pro')
+                }
+            },
+            rows: settings.customTags,
+            errors: settings.getErrors('customTags')
+        }) }}
+
     </div>
 
     {% if isCommerceInstalled %}
