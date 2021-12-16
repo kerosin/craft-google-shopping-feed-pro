@@ -64,6 +64,11 @@
     {label: 'Custom Value...'|t('google-shopping-feed-pro'), value: constant('OPTION_CUSTOM_VALUE', settings)}
 ] %}
 
+{% set settingsTabErrorKeys = [
+    'includeVariants',
+    'useProductUrl',
+    'useProductData',
+] %}
 {% set filtersTabErrorKeys = [
     'entryStatusFilter',
     'entryTypeFilter',
@@ -75,18 +80,31 @@
 ] %}
 {% set errors = settings.getErrors()|keys %}
 
-{% set tabs = {
-    0: {
-        label: 'General'|t('google-shopping-feed-pro'),
-        url: '#settings-tab-general',
-        class: errors|diff(filtersTabErrorKeys)|length ? 'error' : ''
-    },
-    1: {
+{% set tabs = [
+    {
+        label: 'Mapping'|t('google-shopping-feed-pro'),
+        url: '#settings-tab-mapping',
+        class: errors|diff(settingsTabErrorKeys, filtersTabErrorKeys)|length ? 'error' : ''
+    }
+] %}
+
+{% if isCommerceInstalled %}
+    {% set tabs = tabs|merge([
+        {
+            label: 'Settings'|t('google-shopping-feed-pro'),
+            url: '#settings-tab-settings',
+            class: errors|intersect(settingsTabErrorKeys)|length ? 'error' : ''
+        }
+    ]) %}
+{% endif %}
+
+{% set tabs = tabs|merge([
+    {
         label: 'Filters'|t('google-shopping-feed-pro'),
         url: '#settings-tab-filters',
         class: errors|intersect(filtersTabErrorKeys)|length ? 'error' : ''
     }
-} %}
+]) %}
 
 <header id="content-header" class="pane-header">
     {% include '_includes/tabs' with {
@@ -97,7 +115,7 @@
 </header>
 
 {% namespace 'settings' %}
-    <div id="tab-general">
+    <div id="tab-mapping">
 
         {% if craft.app.plugins.pluginInfo('google-shopping-feed-pro').isTrial %}
             <div class="warning-alert warning with-icon">
@@ -105,44 +123,7 @@
             </div>
         {% endif %}
 
-        {% if isCommerceInstalled %}
-            <h2>{{ 'Settings'|t('google-shopping-feed-pro') }}</h2>
-
-            <h3>{{ 'Variants'|t('google-shopping-feed-pro') }}</h3>
-
-            {{ forms.lightswitchField({
-                label: 'Include Variants'|t('google-shopping-feed-pro'),
-                id: 'includeVariants',
-                name: 'includeVariants',
-                on: settings.includeVariants,
-                errors: settings.getErrors('includeVariants'),
-                toggle: 'includeVariants-dependent-fields'
-            }) }}
-
-            <div id="includeVariants-dependent-fields"{{ not settings.includeVariants ? ' class="hidden"' }}>
-                {{ forms.lightswitchField({
-                    label: 'Use Product Url for Variants'|t('google-shopping-feed-pro'),
-                    id: 'useProductUrl',
-                    name: 'useProductUrl',
-                    on: settings.useProductUrl,
-                    errors: settings.getErrors('useProductUrl')
-                }) }}
-
-                {{ forms.lightswitchField({
-                    label: 'Use Product Data for Variants'|t('google-shopping-feed-pro'),
-                    id: 'useProductData',
-                    name: 'useProductData',
-                    on: settings.useProductData,
-                    errors: settings.getErrors('useProductData')
-                }) }}
-            </div>
-
-            <hr>
-        {% endif %}
-
-        <h2>{{ 'Fields Mapping'|t('google-shopping-feed-pro') }}</h2>
-
-        <h3>{{ 'Basic Product Data'|t('google-shopping-feed-pro') }}</h3>
+        <h2>{{ 'Basic Product Data'|t('google-shopping-feed-pro') }}</h2>
 
         {{ forms.selectField({
             label: 'ID'|t('google-shopping-feed-pro'),
@@ -266,7 +247,9 @@
             errors: settings.getErrors('salePriceEffectiveDateToField')
         }) }}
 
-        <h3>{{ 'Product Identifiers'|t('google-shopping-feed-pro') }}</h3>
+        <hr>
+
+        <h2>{{ 'Product Identifiers'|t('google-shopping-feed-pro') }}</h2>
 
         {{ _self.customValueField({
             label: 'Brand'|t('google-shopping-feed-pro'),
@@ -306,7 +289,9 @@
             errors: settings.getErrors('identifierExistsField')
         }) }}
 
-        <h3>{{ 'Product Category'|t('google-shopping-feed-pro') }}</h3>
+        <hr>
+
+        <h2>{{ 'Product Category'|t('google-shopping-feed-pro') }}</h2>
 
         {{ _self.customValueField({
             label: 'Google Product Category'|t('google-shopping-feed-pro'),
@@ -326,7 +311,9 @@
             errors: settings.getErrors('productTypeField')
         }) }}
 
-        <h3>{{ 'Additional Product Data'|t('google-shopping-feed-pro') }}</h3>
+        <hr>
+
+        <h2>{{ 'Additional Product Data'|t('google-shopping-feed-pro') }}</h2>
 
         {{ forms.selectField({
             label: 'Additional Image'|t('google-shopping-feed-pro'),
@@ -338,7 +325,9 @@
             errors: settings.getErrors('additionalImageLinkField')
         }) }}
 
-        <h3>{{ 'Price & Availability'|t('google-shopping-feed-pro') }}</h3>
+        <hr>
+
+        <h2>{{ 'Price & Availability'|t('google-shopping-feed-pro') }}</h2>
 
         {{ forms.selectField({
             label: 'Availability Date'|t('google-shopping-feed-pro'),
@@ -434,7 +423,9 @@
             errors: settings.getErrors('loyaltyPointsField')
         }) }}
 
-        <h3>{{ 'Detailed Product Description'|t('google-shopping-feed-pro') }}</h3>
+        <hr>
+
+        <h2>{{ 'Detailed Product Description'|t('google-shopping-feed-pro') }}</h2>
 
         {{ _self.customValueField({
             label: 'Condition'|t('google-shopping-feed-pro'),
@@ -685,6 +676,42 @@
         }) }}
 
     </div>
+
+    {% if isCommerceInstalled %}
+        <div id="tab-settings" class="hidden">
+            <h2>{{ 'Settings'|t('google-shopping-feed-pro') }}</h2>
+
+            <h3>{{ 'Variants'|t('google-shopping-feed-pro') }}</h3>
+
+            {{ forms.lightswitchField({
+                label: 'Include Variants'|t('google-shopping-feed-pro'),
+                id: 'includeVariants',
+                name: 'includeVariants',
+                on: settings.includeVariants,
+                errors: settings.getErrors('includeVariants'),
+                toggle: 'includeVariants-dependent-fields'
+            }) }}
+
+            <div id="includeVariants-dependent-fields"{{ not settings.includeVariants ? ' class="hidden"' }}>
+                {{ forms.lightswitchField({
+                    label: 'Use Product Url for Variants'|t('google-shopping-feed-pro'),
+                    id: 'useProductUrl',
+                    name: 'useProductUrl',
+                    on: settings.useProductUrl,
+                    errors: settings.getErrors('useProductUrl')
+                }) }}
+
+                {{ forms.lightswitchField({
+                    label: 'Use Product Data for Variants'|t('google-shopping-feed-pro'),
+                    id: 'useProductData',
+                    name: 'useProductData',
+                    on: settings.useProductData,
+                    errors: settings.getErrors('useProductData')
+                }) }}
+            </div>
+        </div>
+    {% endif %}
+
     <div id="tab-filters" class="hidden">
         <h2>{{ 'Entries'|t('google-shopping-feed-pro') }}</h2>
 
