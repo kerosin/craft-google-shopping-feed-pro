@@ -174,39 +174,6 @@ class GoogleShoppingFeedProVariable
     }
 
     /**
-     * @param string|null $value
-     * @return bool
-     * @since 1.1.0
-     * @deprecated in 1.3.0
-     */
-    public function isUseProductId(?string $value): bool
-    {
-        return $this->getService()->isUseProductId($value);
-    }
-
-    /**
-     * @param string|null $value
-     * @return bool
-     * @since 1.2.0
-     * @deprecated in 1.3.0
-     */
-    public function isUseSaleStartDate(?string $value): bool
-    {
-        return $this->getService()->isUseSaleStartDate($value);
-    }
-
-    /**
-     * @param string|null $value
-     * @return bool
-     * @since 1.2.0
-     * @deprecated in 1.3.0
-     */
-    public function isUseSaleEndDate(?string $value): bool
-    {
-        return $this->getService()->isUseSaleEndDate($value);
-    }
-
-    /**
      * @param Element $element
      * @return bool
      * @throws Exception
