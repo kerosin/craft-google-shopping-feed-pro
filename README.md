@@ -36,9 +36,29 @@ Open the Craft admin and go to Settings → Plugins → Google Shopping Feed Pro
 
     http://example.com/google-shopping-feed-pro/feed/entries
     
+To save the output to a file add `save` query param to the url:
+
+    http://example.com/google-shopping-feed-pro/feed/entries?save
+    
+The file will be saved in the following path:
+
+    http://example.com/assets/google-shopping-feed-pro/entries-SITE_HANDLE.xml
+    
+Replace **SITE_HANDLE** in the url with a real site handle.
+    
 ### Products feed url
 
     http://example.com/google-shopping-feed-pro/feed/products
+    
+To save the output to a file add `save` query param to the url:
+
+    http://example.com/google-shopping-feed-pro/feed/products?save
+    
+The file will be saved in the following path:
+
+    http://example.com/assets/google-shopping-feed-pro/products-SITE_HANDLE.xml
+    
+Replace **SITE_HANDLE** in the url with a real site handle.
     
 ### Twig function
 
