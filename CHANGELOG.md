@@ -1,5 +1,17 @@
 # Google Shopping Feed Pro Changelog
 
+## 1.5.0 - 2021-12-20
+### Added
+- Added custom tags
+- Added the ability to save xml output to file
+- Added code improvements
+
+### Changed
+- Updated plugin settings UI
+
+### Removed
+- Removed deprecated methods
+
 ## 1.4.0 - 2021-12-12
 ### Added
 - Added filters
