@@ -630,7 +630,7 @@ class Settings extends Model
      * @var array
      * @since 1.5.0
      */
-    public $customTags;
+    public $customTags = [];
 
     /**
      * Entry status filter.
