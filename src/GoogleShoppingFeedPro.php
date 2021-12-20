@@ -110,6 +110,7 @@ class GoogleShoppingFeedPro extends Plugin
             'google-shopping-feed-pro/settings',
             [
                 'settings' => $this->getSettings(),
+                'isVersionLessThan37' => version_compare(Craft::$app->getInfo()->version, '3.7', '<'),
             ]
         );
     }
@@ -119,10 +120,16 @@ class GoogleShoppingFeedPro extends Plugin
      */
     public function getSettingsResponse()
     {
+        $template = 'settings/plugins/_settings';
+
+        if (version_compare(Craft::$app->getInfo()->version, '3.7', '<')) {
+            $template = 'google-shopping-feed-pro/_layouts/_settings';
+        }
+
         /** @var craft\web\Controller $controller */
         $controller = Craft::$app->controller;
 
-        return $controller->renderTemplate('settings/plugins/_settings', [
+        return $controller->renderTemplate($template, [
             'plugin' => $this,
             'settingsHtml' => $this->settingsHtml(),
         ]);
