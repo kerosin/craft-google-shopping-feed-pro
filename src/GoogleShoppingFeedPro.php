@@ -110,7 +110,6 @@ class GoogleShoppingFeedPro extends Plugin
             'google-shopping-feed-pro/settings',
             [
                 'settings' => $this->getSettings(),
-                'isVersionLessThan37' => version_compare(Craft::$app->getInfo()->version, '3.7', '<'),
             ]
         );
     }
@@ -132,6 +131,7 @@ class GoogleShoppingFeedPro extends Plugin
         return $controller->renderTemplate($template, [
             'plugin' => $this,
             'settingsHtml' => $this->settingsHtml(),
+            'isVersionLt37' => version_compare(Craft::$app->getInfo()->version, '3.7', '<'),
         ]);
     }
 
