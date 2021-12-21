@@ -1,5 +1,9 @@
 # Google Shopping Feed Pro Changelog
 
+## 1.6.0 - 2021-12-21
+### Changed
+- Updated save path for files
+
 ## 1.5.2 - 2021-12-21
 ### Fixed
 - Fixed plugin settings UI for Craft version before 3.7
